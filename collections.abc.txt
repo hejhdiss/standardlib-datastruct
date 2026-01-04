@@ -1,0 +1,16 @@
+collections.abc
+Iterable
+Iterator
+Sequence
+MutableSequence
+Mapping
+MutableMapping
+Set
+MutableSet
+Callable
+Hashable
+KeysView
+ValuesView
+ItemsView
+AsyncIterable
+AsyncIterator
