@@ -1,0 +1,19 @@
+heapq
+
+definition (single sentence):
+heapq is a Python standard library module that provides functions to implement heaps (priority queues) using regular lists, maintaining the heap invariant efficiently.
+
+Heap type:
+
+Implements a min-heap by default (smallest element at index 0).
+
+Max-heap can be simulated using negation of values
+
+heapify(iterable)	Convert list into a heap in-place
+heappush(heap,item)	Push item onto heap
+heappop(heap)	Pop and return smallest item
+heappushpop(heap,item)	Push item then pop smallest (efficient)
+heapreplace(heap,item)	Pop smallest then push item (efficient)
+merge(*iterables)	Merge multiple sorted iterables
+nlargest(n, iterable)	Return n largest elements
+nsmallest(n, iterable)	Return n smallest elements
