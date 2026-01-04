@@ -1,0 +1,26 @@
+bisect
+
+Definition (single sentence):
+The bisect module provides functions for maintaining a list in sorted order without having to sort it repeatedly, using binary search to find insertion points efficiently.
+
+Key Functionalities / Methods
+
+bisect.bisect_left(a, x, lo=0, hi=len(a))
+
+Returns the index where x should be inserted in list a to maintain sorted order, inserting before existing entries of x.
+
+bisect.bisect_right(a, x, lo=0, hi=len(a)) or bisect(a, x)
+
+Returns the index where x should be inserted, after existing entries of x.
+
+bisect(a, x) is just an alias for bisect_right(a, x).
+
+bisect.insort_left(a, x, lo=0, hi=len(a))
+
+Inserts x into list a at the position returned by bisect_left, maintaining sorted order.
+
+bisect.insort_right(a, x, lo=0, hi=len(a)) or insort(a, x)
+
+Inserts x into list a at the position returned by bisect_right, maintaining sorted order.
+
+insort(a, x) is an alias for insort_right(a, x).

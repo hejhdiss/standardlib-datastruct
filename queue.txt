@@ -1,0 +1,51 @@
+
+
+queue
+Definition (single sentence):
+The queue module provides thread-safe FIFO (First-In-First-Out), LIFO (Last-In-First-Out), and priority queues with locking for multi-threaded programs.
+
+Queue(maxsize=0)
+
+Standard FIFO queue.
+
+maxsize limits the number of items (0 means infinite).
+
+Thread-safe.
+
+Key methods:
+
+put(item, block=True, timeout=None) → adds item to the queue.
+
+get(block=True, timeout=None) → removes and returns the next item.
+
+put_nowait(item) → equivalent to put(item, False).
+
+get_nowait() → equivalent to get(False).
+
+qsize() → approximate number of items in the queue.
+
+empty() → True if empty.
+
+full() → True if full.
+
+join(),task_done()
+
+
+
+LifoQueue(maxsize=0)
+
+Stack-style queue (LIFO).
+
+Behaves like a thread-safe stack.
+
+Key methods: Same as Queue.
+
+
+PriorityQueue(maxsize=0)
+
+Queue where items are retrieved in priority order (lowest first).
+
+Items are usually tuples: (priority, data).
+
+Key methods: Same as Queue.
+
