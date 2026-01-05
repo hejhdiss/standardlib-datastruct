@@ -1,1 +1,1 @@
-Main.txt - its syllabus of this  repo.
+main.txt - its syllabus of this  repo.
