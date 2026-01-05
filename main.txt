@@ -1,0 +1,785 @@
+-----
+
+
+functools  -
+
+lru_cache
+cache
+partial
+partialmethod
+wraps
+update_wrapper
+total_ordering
+singledispatch
+singledispatchmethod
+reduce
+cmp_to_key
+
+------
+
+itertools
+
+1. Infinite Iterators
+Function	Description
+count(start=0, step=1)	Counts forever from start by step.
+cycle(iterable)	Repeats the iterable endlessly.
+repeat(object, times=None)	Repeats the object times times, or forever if times=None.
+2. Finite Iterators / Combinatoric Tools
+Function	Description
+accumulate(iterable, func=operator.add)	Cumulative sums or other binary functions.
+chain(*iterables)	Combines multiple iterables into one.
+chain.from_iterable(iterable)	Chains an iterable of iterables.
+combinations(iterable, r)	r-length tuples, order doesn’t matter.
+combinations_with_replacement(iterable, r)	r-length tuples, elements can repeat.
+permutations(iterable, r=None)	r-length tuples, order matters.
+product(*iterables, repeat=1)	Cartesian product of iterables.
+starmap(func, iterable)	Like map(func, ...), but unpacks arguments from tuples.
+tee(iterable, n=2)	Duplicates an iterator n times.
+zip_longest(*iterables, fillvalue=None)	Zips iterables; fills missing values with fillvalue.
+3. Filtering / Slicing Iterators
+Function	Description
+dropwhile(predicate, iterable)	Skips items while predicate is True.
+takewhile(predicate, iterable)	Takes items while predicate is True.
+filterfalse(predicate, iterable)	Opposite of filter().
+islice(iterable, start, stop, step)	Slice an iterator like a list.
+compress(data, selectors)	Selects items where selectors are True.
+4. Combinatoric Helpers / Utilities
+
+These are more specialized but very handy:
+
+Function	Description
+accumulate(iterable, func)	Running totals (or any binary function).
+pairwise(iterable)	Iterate over consecutive pairs (s0,s1),(s1,s2)....
+repeat(object, times)	Repeat a value multiple times.
+product(*iterables, repeat)	Cartesian product.
+permutations(iterable, r)	Permutations.
+combinations(iterable, r)	Combinations.
+combinations_with_replacement(iterable, r)	Combinations with repeats.
+zip_longest(*iterables, fillvalue)	Zip with filling.
+chain(*iterables)	Concatenate iterables.
+chain.from_iterable(iterable_of_iterables)	Concatenate iterables inside an iterable.
+starmap(func, iterable)	Map with unpacked arguments.
+tee(iterable, n)	Duplicate an iterator.
+pairwise(iterable)	Iterates in overlapping pairs.
+filterfalse
+----
+
+types
+MappingProxyType -to make  dictionay immutable or only readable.
+FunctionType
+MethodType - can be used for manully add or change method of instace using  ins.a=MethodType(func,ins) normally it itself doesn't bind to automatiocally pass self,but method typoe nbind it.
+ModuleType
+GeneratorType
+CoroutineType
+
+BuiltinFunctionType
+BuiltinMethodType
+EllipsisType
+LambdaType
+MemberDescriptorType
+WrapperDescriptorType
+GetSetDescriptorType
+AsyncGeneratorType
+CodeType        # compiled bytecode
+FrameType       # stack frames
+TracebackType   # exception chaining
+NotImplementedType
+
+
+----
+
+
+collections
+
+
+
+Counter
+Definition (single sentence):
+Counter is a subclass of dict in Python’s collections module that counts hashable objects in an iterable or mapping, storing elements as keys and their counts as values.
+
+Key Functionalities / Methods:
+
+Initialization: Counter(iterable_or_mapping) → creates counts from iterable or mapping.
+
+elements() → returns an iterator over elements repeating according to their count.
+
+most_common([n]) → returns a list of the n most common elements and their counts.
+
+subtract([iterable-or-mapping]) → subtracts counts using another iterable or mapping.
+
+update([iterable-or-mapping]) → adds counts from another iterable or mapping.
+
+Arithmetic operations:
+
+c + d → add counts (union, keeps positive counts) 
+
+c - d → subtract counts (keeps positive counts)
+
+c & d → intersection (min of counts)
+
+c | d → union (max of counts)
+
+
+
+defaultdict
+Definition (single sentence):
+defaultdict is a subclass of dict that automatically provides a default value for missing keys using a factory function, avoiding KeyError.
+
+Key Functionalities / Methods:
+
+Initialization: defaultdict(default_factory) → sets a callable that provides default values for missing keys.
+
+default_factory → attribute storing the callable used for missing keys.
+
+update([other]) → updates the dictionary with another mapping or iterable of key-value pairs.
+
+Inherits all dict methods such as: keys(), values(), items(), get(), pop(), popitem(), clear().
+
+
+
+deque
+Definition (single sentence):
+deque (double-ended queue) is a list-like container from collections that allows fast appends and pops from both ends, optionally with a fixed maximum length.
+
+Key Functionalities / Methods:
+
+Initialization: deque(iterable, maxlen=None) → creates a deque from an iterable, with optional max length.
+
+append(x) → adds x to the right end.
+
+appendleft(x) → adds x to the left end.
+
+pop() → removes and returns the rightmost element.
+
+popleft() → removes and returns the leftmost element.
+
+extend(iterable) → adds elements to the right end.
+
+extendleft(iterable) → adds elements to the left end (reverses the iterable).
+
+rotate(n) → rotates deque n steps to the right (-n rotates left).  
+
+clear() → removes all elements.
+
+count(x) → counts occurrences of x.
+
+maxlen → attribute showing the maximum size, automatically discards oldest elements if exceeded.
+
+
+
+
+
+namedtuple
+Definition (single sentence):
+namedtuple is a factory function in collections that creates tuple subclasses with named fields, allowing field access by name instead of index.
+
+Key Functionalities / Methods:
+
+Initialization: namedtuple('TypeName', ['field1','field2',...]) → defines a new subclass of tuple.
+
+Field access by name: instance.fieldname → access values without index.
+
+_fields → returns a tuple of field names.
+
+_asdict() → returns a OrderedDict mapping field names to values.
+
+_replace(**kwargs) → returns a new instance with specified fields replaced.
+
+_make(iterable) → class method to create an instance from an iterable.
+
+Immutable → like tuples, values cannot be changed directly.
+typing.NamedTuple = used to create class like .
+  
+
+ChainMap
+Definition (single sentence):
+ChainMap is a class in collections that groups multiple dictionaries or mappings into a single view, searching them in order for keys.
+
+Key Functionalities / Methods:
+
+Initialization: ChainMap(*maps) → combines multiple dictionaries or mappings.
+
+Key lookup → searches each mapping in order until the key is found.
+
+Assignment / update → changes are made to the first mapping.
+
+maps → attribute storing the list of underlying mappings.
+
+new_child([map]) → adds a new mapping to the front (useful for scopes or temporary overrides).
+
+parents → returns a new ChainMap excluding the first mapping.
+
+Inherits standard dict methods like keys(), values(), items(), get(), etc.
+  
+
+
+
+
+OrderedDict
+Definition (single sentence):
+OrderedDict is a dictionary subclass in collections that preserves the insertion order of keys, unlike regular dicts in older Python versions (before 3.7).
+
+Key Functionalities / Methods:
+
+Initialization: OrderedDict([items]) → creates an ordered dictionary from a list of key-value pairs or another mapping.
+
+Preserves order → iteration over keys, values, or items returns them in insertion order.
+
+move_to_end(key, last=True) → moves an existing key to either end; last=False moves to the front.
+
+popitem(last=True) → removes and returns the last item by default; last=False removes the first item.
+
+reversed(od) → iterates over keys in reverse insertion order.
+
+Supports all standard dict methods: keys(), values(), items(), get(), pop(), update(), clear(), etc.
+
+
+
+
+
+-----
+collections.abc
+Iterable
+Iterator
+Sequence
+MutableSequence
+Mapping
+MutableMapping
+Set
+MutableSet
+Callable
+Hashable
+KeysView
+ValuesView
+ItemsView
+AsyncIterable
+AsyncIterator
+----
+
+heapq
+
+efinition (single sentence):
+heapq is a Python standard library module that provides functions to implement heaps (priority queues) using regular lists, maintaining the heap invariant efficiently.
+
+Heap type:
+
+Implements a min-heap by default (smallest element at index 0).
+
+Max-heap can be simulated using negation of values
+
+heapify(iterable)	Convert list into a heap in-place
+heappush(heap,item)	Push item onto heap
+heappop(heap)	Pop and return smallest item
+heappushpop(heap,item)	Push item then pop smallest (efficient)
+heapreplace(heap,item)	Pop smallest then push item (efficient)
+merge(*iterables)	Merge multiple sorted iterables
+nlargest(n, iterable)	Return n largest elements
+nsmallest(n, iterable)	Return n smallest elements
+
+---
+
+
+
+queue
+Definition (single sentence):
+The queue module provides thread-safe FIFO (First-In-First-Out), LIFO (Last-In-First-Out), and priority queues with locking for multi-threaded programs.
+
+Queue(maxsize=0)
+
+Standard FIFO queue.
+
+maxsize limits the number of items (0 means infinite).
+
+Thread-safe.
+
+Key methods:
+
+put(item, block=True, timeout=None) → adds item to the queue.
+
+get(block=True, timeout=None) → removes and returns the next item.
+
+put_nowait(item) → equivalent to put(item, False).
+
+get_nowait() → equivalent to get(False).
+
+qsize() → approximate number of items in the queue.
+
+empty() → True if empty.
+
+full() → True if full.
+
+join(),task_done()
+
+
+
+LifoQueue(maxsize=0)
+
+Stack-style queue (LIFO).
+
+Behaves like a thread-safe stack.
+
+Key methods: Same as Queue.
+
+
+PriorityQueue(maxsize=0)
+
+Queue where items are retrieved in priority order (lowest first).
+
+Items are usually tuples: (priority, data).
+
+Key methods: Same as Queue.
+
+
+----
+
+
+bisect
+
+Definition (single sentence):
+The bisect module provides functions for maintaining a list in sorted order without having to sort it repeatedly, using binary search to find insertion points efficiently.
+
+Key Functionalities / Methods
+
+bisect.bisect_left(a, x, lo=0, hi=len(a))
+
+Returns the index where x should be inserted in list a to maintain sorted order, inserting before existing entries of x.
+
+bisect.bisect_right(a, x, lo=0, hi=len(a)) or bisect(a, x)
+
+Returns the index where x should be inserted, after existing entries of x.
+
+bisect(a, x) is just an alias for bisect_right(a, x).
+
+bisect.insort_left(a, x, lo=0, hi=len(a))
+
+Inserts x into list a at the position returned by bisect_left, maintaining sorted order.
+
+bisect.insort_right(a, x, lo=0, hi=len(a)) or insort(a, x)
+
+Inserts x into list a at the position returned by bisect_right, maintaining sorted order.
+
+insort(a, x) is an alias for insort_right(a, x).
+
+
+---
+
+operator
+
+The operator module in Python provides function equivalents for Python’s built-in operators (like +, -, *, ==, <, etc.) and also includes functional tools for item access, attribute access, and method calls.
+
+This is especially useful for:
+
+Functional programming (map, filter, reduce, etc.)
+
+Sorting using keys
+
+Dynamic access of attributes or items
+
+Avoiding writing lambda functions repeatedly
+unction
+Equivalent Operator
+Example
+operator.add(a, b)	a + b	operator.add(3, 5) → 8
+operator.sub(a, b)	a - b	operator.sub(10, 4) → 6
+operator.mul(a, b)	a * b	operator.mul(3, 5) → 15
+operator.truediv(a, b)	a / b	operator.truediv(10, 2) → 5.0
+operator.floordiv(a, b)	a // b	operator.floordiv(10, 3) → 3
+operator.mod(a, b)	a % b	operator.mod(10, 3) → 1
+operator.pow(a, b)	a ** b	operator.pow(2, 3) → 8
+operator.neg(a)	-a	operator.neg(5) → -5
+operator.pos(a)	+a	operator.pos(-5) → -5
+operator.abs(a)	abs(a)	operator.abs(-7) → 7
+
+Function	Equivalent Operator	Example
+operator.eq(a, b)	a == b	operator.eq(3, 3) → True
+operator.ne(a, b)	a != b	operator.ne(3, 4) → True
+operator.lt(a, b)	a < b	operator.lt(2, 5) → True
+operator.le(a, b)	a <= b	operator.le(5, 5) → True
+operator.gt(a, b)	a > b	operator.gt(6, 4) → True
+operator.ge(a, b)	a >= b	operator.ge(7, 10) → False
+
+Function	Equivalent Operator	Example
+operator.not_(a)	not a	operator.not_(True) → False
+operator.and_(a, b)	a & b	operator.and_(5, 3) → 1
+operator.or_(a, b)	a | b	operator.or_(5, 3) → 7
+operator.xor(a, b)	a ^ b	operator.xor(5, 3) → 6
+⚠️ Note: and_ and or_ here are bitwise operators (&, |), not Python and / or.
+
+operator.itemgetter(n)	Get item at index/key	f = operator.itemgetter(1); f([10,20,30]) → 20
+operator.attrgetter(attr)	Get object attribute	operator.attrgetter('real')(3+4j) → 3.0
+operator.methodcaller(name, *args, **kwargs)	Call object method dynamically	f = operator.methodcaller('upper'); f('hello') → 'HELLO'
+
+operator.iadd(a, b)	a += b	x = 5; operator.iadd(x, 3) → 8
+operator.isub(a, b)	a -= b	operator.isub(10, 4) → 6
+operator.imul(a, b)	a *= b	operator.imul(3, 5) → 15
+operator.itruediv(a, b)	a /= b	operator.itruediv(10, 2) → 5.0
+operator.ifloordiv(a, b)	a //= b	operator.ifloordiv(10, 3) → 3
+operator.imod(a, b)	a %= b	operator.imod(10, 3) → 1
+operator.ipow(a, b)	a **= b	operator.ipow(2, 3) → 8
+
+
+-----
+
+inspect
+The inspect module allows you to introspect live objects in Python—classes, functions, modules, methods, frames, etc. It helps in debugging, documentation, meta-programming, and frameworks.
+
+inspect.isfunction(obj)	Checks if object is a Python function	inspect.isfunction(lambda x: x+1) → True
+inspect.ismethod(obj)	Checks if object is a method (bound)	class A: def m(self): pass; a=A(); inspect.ismethod(a.m) → True
+inspect.isclass(obj)	Checks if object is a class	inspect.isclass(int) → True
+inspect.ismodule(obj)	Checks if object is a module	import math; inspect.ismodule(math) → True
+inspect.isgeneratorfunction(obj)	Checks if function is a generator	def g(): yield 1; inspect.isgeneratorfunction(g) → True
+inspect.isgenerator(obj)	Checks if object is a generator	gen = (x for x in range(3)); inspect.isgenerator(gen) → True
+inspect.iscoroutinefunction(obj)	Checks if function is async	async def f(): pass; inspect.iscoroutinefunction(f) → True
+inspect.isawaitable(obj)	Checks if object can be awaited	async def f(): pass; inspect.isawaitable(f()) → True
+
+inspect.getsource(obj)	Get source code of function, class, or method	def f(): return 1; print(inspect.getsource(f))
+inspect.getfile(obj)	Returns file path where object is defined	import math; inspect.getfile(math) → "/usr/lib/python3.11/math.py"
+inspect.getmodule(obj)	Returns module where object is defined	inspect.getmodule(len) → <module 'builtins'>
+
+inspect.signature(obj)	Returns signature object of a callable	def f(a, b=2, *args, **kwargs): pass; sig = inspect.signature(f); print(sig) → (a, b=2, *args, **kwargs)
+Accessing parameters	sig.parameters returns ordered dict of parameters	for name, param in sig.parameters.items(): print(name, param.default)
+
+inspect.getmembers(obj, predicate=None)	Get all members (attributes/methods) of an object, can filter with predicate	class A: x=1; def f(self): pass; print(inspect.getmembers(A, inspect.isfunction)) → [('f', <function A.f at ...>)]
+inspect.getclasstree(classes)	Shows inheritance tree of classes	class A: pass; class B(A): pass; print(inspect.getclasstree([A,B]))
+
+inspect.currentframe()	Returns current stack frame object	import inspect; frame = inspect.currentframe(); print(frame.f_lineno)
+inspect.stack()	Returns list of frame records (current stack)	for f in inspect.stack(): print(f.function, f.lineno)
+inspect.getframeinfo(frame)	Returns info (filename, lineno, function, code context) from frame	frame = inspect.currentframe(); info = inspect.getframeinfo(frame); print(info.filename, info.lineno)
+inspect.getouterframes(frame)	Get outer frames (caller chain)	frame = inspect.currentframe(); print(inspect.getouterframes(frame)[1].function)
+
+inspect.getmro(cls)	Returns Method Resolution Order for class	class A: pass; class B(A): pass; print(inspect.getmro(B)) → (<class 'B'>, <class 'A'>, <class 'object'>)
+inspect.getdoc(obj)	Returns docstring	def f(): """hello"""; print(inspect.getdoc(f)) → "hello"
+inspect.getcomments(obj)	Returns inline comments above object	def f(): pass; # test print(inspect.getcomments(f))
+
+inspect.getfullargspec(func)
+Extended version with annotations & defaults
+def f(a:int,b=2,*c,**d): pass; print(inspect.getfullargspec(f))
+
+inspect.ismodule(obj)	Check if object is module	import math; inspect.ismodule(math)
+inspect.isbuiltin(obj)	Check if object is a built-in	inspect.isbuiltin(len) → True
+inspect.unwrap(func)	Return original function after decorators	def deco(f): return f; @deco; def f(): pass; print(inspect.unwrap(f))
+inspect.signature.bind(*args, **kwargs)	Bind arguments to a signature	sig = inspect.signature(f); bound = sig.bind(1,2,3,x=4); print(bound.arguments)
+
+----
+
+dis
+is stands for “disassemble”.
+
+It’s a standard library module used to inspect the bytecode of Python functions, classes, or code objects.
+
+Bytecode is the low-level instructions that the Python interpreter executes.
+
+
+dis.dis(obj) — Disassemble a function, method, class, or code object into bytecode.
+
+dis.code_info(obj) — Returns detailed metadata about a code object as a string.
+
+dis.show_code(obj) — Prints a nicely formatted summary of a code object.
+
+dis.Bytecode(obj) — Returns an iterator over the bytecode instructions of obj. - use opname and arval to print its data of each from iterator.
+
+dis.opname — List of all opcode names by numeric index.
+
+dis.opmap — Dictionary mapping opcode names → numeric opcode.
+
+-----
+
+
+-*-
+bytes
+bytesarray
+memoryview
+
+
+bytes	b = b'hello'
+b2 = bytes([104,101,108,108,111])	Immutable sequence of bytes. Store raw binary data or encoded text.	Indexing/slicing: b[0], b[:3]
++ concatenation: b + b' world'
+* repetition: b*2
+Methods: .count(), .find(), .startswith(), .endswith()
+bytearray	ba = bytearray(b'hello')
+ba[0] = 72	Mutable sequence of bytes. Modify binary data in-place.	Indexing/slicing assignment: ba[1:3] = b'EL'
+append(), extend(), insert(), pop(), remove()
++, * supported
+memoryview	mv = memoryview(ba)
+mv[0:5] = b'HELLO'	View on a buffer without copying. Efficient slicing/manipulation of large binary data.	Indexing/slicing: mv[0], mv[1:4]
+cast() to view as different types
+Read-only if source is bytes
+str.encode() → bytes	b = "hello".encode('utf-8')	Convert string to bytes	.encode(encoding)
+bytes.decode() → str	s = b'hello'.decode('utf-8')	Convert bytes to string	.decode(encoding)
+_*_
+
+
+struct
+struct is small and lightweight, only handles binary packing/unpacking.
+
+Works well with bytes, bytearray, memoryview.
+
+Commonly used for binary files, network protocols, C structs.
+
+Endianness is controlled with < (little-endian) or > (big-endian).
+
+
+Function / Feature	Example	Usage / Purpose	Notes / Operators
+struct.pack(fmt, v1, v2, …)	b = struct.pack('i f', 1024, 3.14)	Convert Python values into bytes according to format string fmt.	Format codes: i=int, f=float, h=short, d=double, s=char[]
+struct.unpack(fmt, buffer)	x = struct.unpack('i f', b)	Convert bytes back to Python values using same format string.	Returns a tuple of values.
+struct.pack_into(fmt, buffer, offset, v1, v2, …)	buf = bytearray(8)
+struct.pack_into('i f', buf, 0, 1024, 3.14)	Pack values directly into a pre-allocated buffer at offset.	Avoids creating new bytes object, useful for memory efficiency.
+struct.unpack_from(fmt, buffer, offset=0)	values = struct.unpack_from('i f', buf, 0)	Unpack values from a buffer at given offset.	Works on bytes, bytearray, memoryview.
+struct.calcsize(fmt)	size = struct.calcsize('i f')	Returns the number of bytes needed for the given format string.	Useful for reading/writing fixed-size binary structures.
+struct.iter_unpack(fmt, buffer)	for val in struct.iter_unpack('i f', buf*2): print(val)	Iterate over repeated packed structures in a buffer.	Returns an iterator of tuples, efficient for large data.
+Format strings (fmt)	 'i', 'f', 'h', 'd', 's', '?'	Specify how Python values are packed/unpacked.	Prefixes: <=little-endian, >=big-endian, ==native
+
+------
+
+contextlib - ExitStack
+
+contextlib.ExitStack
+python<br>from contextlib import ExitStack<br>filenames = ['a.txt','b.txt']<br>with ExitStack() as stack:<br> files = [stack.enter_context(open(f)) for f in filenames]<br> for f in files:<br> print(f.read())<br>
+Dynamically manage multiple context managers in a single with block
+.enter_context(cm) → enter a context manager
+.callback(func) → register a callback to run on exit
+
+
+sample:
+
+from contextlib import ExitStack
+
+# Suppose we have multiple files to open dynamically
+filenames = ['file1.txt', 'file2.txt', 'file3.txt']
+
+with ExitStack() as stack:
+    # Open all files and enter their context
+    files = [stack.enter_context(open(f, 'w')) for f in filenames]
+
+    # Write something to each file
+    for i, f in enumerate(files, start=1):
+        f.write(f"This is line {i}\n")
+
+    # You can also register arbitrary callbacks
+    stack.callback(print, "All files have been closed automatically!")
+
+# At this point, all files are closed, and the callback has run
+contextlib.redirect_stdout	python<br>from contextlib import redirect_stdout<br>with open('out.txt','w') as f:<br> with redirect_stdout(f):<br> print("Hello")<br>	Redirect sys.stdout to a file or stream	Useful for capturing or rerouting prints
+contextlib.redirect_stderr	python<br>from contextlib import redirect_stderr<br>import sys<br>with open('err.txt','w') as f:<br> with redirect_stderr(f):<br> print("Error!", file=sys.stderr)<br>	Redirect sys.stderr to a file or stream	Useful for capturing or rerouting error messages
+contextlib.nullcontext	python<br>from contextlib import nullcontext<br>with nullcontext("val") as v:<br> print(v)<br>	Does nothing — acts as a placeholder context manager	Useful for conditional context managers
+
+
+
+---
+
+
+
+Enum
+
+The enum module (introduced in Python 3.4) allows you to define enumerations, which are sets of symbolic names bound to unique, constant values.
+
+Enums are immutable and hashable, making them perfect for fixed sets of choices.
+
+Common use cases: status codes, options, flags, weekdays, months, etc.
+
+
+Enum → basic enumeration
+
+IntEnum → enumeration that behaves like integers
+
+auto → automatically assign values
+
+Flag / IntFlag → bitwise flags
+
+eature	Enum	Flag	IntFlag
+Purpose	Fixed set of symbolic constants	Bitwise combinable constants	Bitwise combinable constants that also behave like integers
+Member .name	Always available	Only for single predefined members	Only for single predefined members
+Member .value	Always available	Numeric value of combination	Numeric value of combination
+Combination	❌ Cannot combine	✅ Can combine using `	, &, ^, ~`
+Arithmetic	❌ Not allowed	❌ Not allowed	✅ Allowed (+, -, etc.) because IntFlag inherits from int
+Iteration	Iterates over all members	Iterates over all members	Iterates over all members
+Access by value	Enum(value)	Flag(value) → may generate unnamed combination	IntFlag(value) → may generate unnamed combination
+Access by name	Enum['NAME']	Flag['NAME']	IntFlag['NAME']
+Immutability	Members immutable	Members immutable; variable combinations can be updated	Members immutable; variable combinations can be updated
+Use case	Status codes, weekdays, fixed options	Permissions, bitmasks, combinable flags	Permissions, bitmasks with integer operations
+Notes / Key Points Table
+Concept	Notes
+.name	Enum: always exists. Flag/IntFlag: exists only for single predefined members, not for combinations.
+.value	Numeric value of member. For Flag/IntFlag combinations, it’s the sum of bits.
+Bitwise `	`
+Bitwise &	Checks intersection. Result may be a single member (with .name) or a combination (name=None).
+Arithmetic	Only IntFlag supports arithmetic.
+Immutability	Members themselves cannot be modified. Variable holding combinations can be updated using `
+Unnamed combinations	When a combination does not match any predefined member, .name = None but .value exists.
+Iteration	Iterates only predefined members, not all possible combinations.
+Membership check	Use in or bitwise & for Flag/IntFlag combinations: Permission.READ in p ✅
+
+----
+
+mmap
+mmap allows you to map a file (or part of it) into memory, so you can access it like a mutable bytearray.
+
+Instead of reading the whole file into memory, you can read/write parts of it on-demand.
+
+Very useful for large files, binary data, or shared memory.
+
+
+mmap.mmap(
+    fileno,
+    length,
+    access=mmap.ACCESS_WRITE,
+    offset=0
+)
+mmap.mmap(-1,size) - creates  a memory based  - in that size.
+
+if length is zero then  full  file map upto EOF. 
+igh-level access modes (recommended)
+Access	Read	Write	File modified	Notes
+ACCESS_READ	✅	❌	❌	Safe, read-only
+ACCESS_WRITE	✅	✅	✅	Normal writable
+ACCESS_COPY	✅	✅	❌	Copy-on-write
+
+
+
+mm.size()	File size
+len(mm)	Mapped length
+mm.tell()	Current pointer
+mm.seek(pos)	Move pointer
+📖 Reading
+Method	Description
+mm.read(n)	Read n bytes
+mm.read()	Read to end
+mm.readline()	Read line
+mm.readinto(buf)	Zero-copy read
+✍ Writing
+Method	Description
+mm.write(b)	Write bytes
+mm.write_byte(b)	Write one byte
+mm[:] = b	Overwrite region
+mm[a:b] = b	Random write
+🔍 Searching
+Method	Description
+mm.find(b, start=0)	Find bytes
+mm.rfind(b)	Reverse find
+🔄 Sync / lifecycle
+Method	Description
+mm.flush()	Write changes to disk
+mm.close()	Unmap memory
+mm.resize(n)	Resize mapping (write only)
+
+Method	Cursor moves?	Works like
+find()	❌ No	bytes.find()
+rfind()	❌ No	bytes.rfind()
+read()	✅ Yes	file I/O
+readline()	✅ Yes	file I/O
+
+mm.find(sub[, start[, end]])
+mm.rfind(sub[, start[, end]])
+ 
+offset % mmap.PAGESIZE == 0
+The offset must be a multiple of the system memory page size
+
+
+Usually 4096 bytes (4 KB)
+
+That’s the size of one memory page used by the OS
+
+Memory is managed page by page, not byte by byte.
+
+Why does offset need to be page-aligned?
+
+Because the OS maps whole pages, never partial pages.
+
+-----
+
+
+
+dataclasses
+
+The dataclasses module provides a decorator and helpers to automatically generate common methods for classes whose main purpose is storing data.
+
+field(
+    default=...,
+    default_factory=...,
+    init=True,
+    repr=True,
+    compare=True,
+    hash=None,
+    metadata=None
+)
+
+A dataclass is a class designed mainly to store data, where Python automatically generates boilerplate methods like:
+
+📌 Auto-generated methods
+Method	Purpose
+__init__	Assign fields
+__repr__	Debug-friendly printing
+__eq__	Equality comparison
+__lt__, __gt__, etc	Only if order=True
+__hash__	Only if immutable
+
+
+
+📌 Field rules
+Rule	Meaning
+Annotated attribute	Becomes a field
+No default	Required argument
+Has default	Optional
+Order matters	Affects init & comparison
+
+@dataclass Parameters Table
+Parameter	Default	Meaning
+init	True	Generate __init__
+repr	True	Generate __repr__
+eq	True	Generate __eq__
+order	False	Generate ordering methods
+frozen	False	Make instance immutable
+slots	False	Use __slots__
+unsafe_hash	False	Force hash generation
+
+
+
+
+field() Options Table
+Option	Purpose
+default	Default value
+default_factory	Callable to create value
+init=False	Exclude from __init__
+repr=False	Hide from repr()
+compare=False	Exclude from comparisons
+metadata	Store custom data
+
+
+
+__post_init__ — Notes
+
+Runs after auto __init__
+
+Used for validation, transformation
+
+📊 Mutability Table
+Config	Can modify fields?	Hashable
+Default	✅ Yes	❌ No
+frozen=True	❌ No	✅ Yes
+unsafe_hash=True	✅ Yes	⚠️ Risky
+
+
+Conversion Helpers
+from dataclasses import asdict, astuple
+
+Function	Result
+asdict(obj)	dict
+astuple(obj)	tuple
+
+dataclass vs Others
+Feature	dataclass	namedtuple	dict
+Mutable	✅	❌	✅
+Type hints	✅	✅	❌
+Methods	✅	❌	❌
+Defaults	✅	⚠️	✅
+Performance	⚡	⚡⚡	⚠️
+
+
+5️⃣ Side-by-side comparison
+Dataclass object	asdict()	astuple()
+User(1, "Alice")	{'id': 1, 'name': 'Alice'}	(1, 'Alice')
+Keeps type	❌	❌
+Has field names	✅	❌
+Order matters	❌	✅
+
+
