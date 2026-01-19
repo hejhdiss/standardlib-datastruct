@@ -1,0 +1,6399 @@
+-----
+
+time
+Low-level time access: timestamps, sleep, performance timers, and time formatting (C-like).
+Core Time Functions
+Name	Usage	Example
+time.time()	Current UNIX timestamp	ts = time.time()
+time.sleep(sec)	Pause execution	time.sleep(1)
+time.ctime([sec])	Timestamp → readable string	time.ctime()
+time.localtime([sec])	Timestamp → local struct_time	time.localtime()
+time.gmtime([sec])	Timestamp → UTC struct_time	time.gmtime()
+time.mktime(t)	struct_time → timestamp	time.mktime(time.localtime())
+
+struct_time Fields
+Field	Usage	Example
+tm_year	Year	t.tm_year
+tm_mon	Month	t.tm_mon
+tm_mday	Day	t.tm_mday
+tm_hour	Hour	t.tm_hour
+tm_min	Minute	t.tm_min
+tm_sec	Second	t.tm_sec
+tm_wday	Weekday	t.tm_wday
+tm_yday	Day of year	t.tm_yday
+
+🕰️ Formatting & Parsing
+Name	Usage	Example
+time.strftime(fmt, t)	struct_time → string	time.strftime("%Y-%m-%d", time.localtime())
+time.strptime(s, fmt)	string → struct_time	time.strptime("2026-01-05", "%Y-%m-%d")
+Common format codes
+
+Code	Meaning
+%Y	Year
+%m	Month
+%d	Day
+%H	Hour (24h)
+%M	Minute
+%S	Second
+%a	Weekday short
+%b	Month short
+%A	Weekday name	Monday
+%B	Month name	January
+
+⚡ Performance / Timers
+Name	Usage	Example
+time.perf_counter()	High-res timer	start = time.perf_counter()
+time.perf_counter_ns()	High-res ns timer	time.perf_counter_ns()
+time.monotonic()	Safe elapsed time	time.monotonic()
+time.monotonic_ns()	Monotonic ns	time.monotonic_ns()
+time.process_time()	CPU time	time.process_time()
+time.process_time_ns()	CPU time ns	time.process_time_ns()
+🖥️ Clock / System Info
+Name	Usage	Example
+time.get_clock_info(name)	Clock precision	time.get_clock_info("time")
+
+Timezone Attributes
+Name	Usage	Example
+time.timezone	UTC offset	time.timezone
+time.altzone	DST offset	time.altzone
+time.daylight	DST support	time.daylight
+
+----
+
+
+datetime
+
+Use datetime for human dates, calendar math, timezones
+(unlike time, which is low-level & OS-style)
+
+Class	Represents	Example
+date	Calendar date	2026-01-05
+time	Time of day	14:30:00
+datetime	Date + time	2026-01-05 14:30:00
+timedelta	Duration	+3 days
+tzinfo	Timezone base class	custom TZ
+timezone	Fixed offset TZ	UTC, +05:30
+
+Class	Represents	What it stores	Typical Usage	Example
+date	Calendar date	Year, month, day	Birthdays, deadlines, dates without time	date(2026, 1, 5)
+time	Time of day	Hour, minute, second, microsecond	Daily schedules, alarms	time(14, 30, 0)
+datetime	Date + time	Date + time (+ optional TZ)	Logs, events, timestamps	datetime(2026, 1, 5, 14, 30)
+timedelta	Duration	Days, seconds, microseconds	Date/time arithmetic	timedelta(days=3)
+tzinfo	Timezone base	TZ rules (abstract)	Custom timezone classes	subclass only
+timezone	Fixed offset TZ	UTC offset	UTC, IST, fixed offsets	timezone.utc
+
+date 
+Common operations on date
+Operation	Syntax	Result
+Today’s date	date.today()	current date
+Access fields	d.year, d.month, d.day	integers
+Add days	d + timedelta(days=5)	new date
+Subtract dates	d2 - d1	timedelta
+Replace fields	d.replace(year=2027)	new date
+Compare dates	d1 < d2	bool
+
+time — Operations
+Common operations on time
+Operation	Syntax	Notes
+Access fields	t.hour, t.minute, t.second, t.microsecond	integers
+Replace fields	t.replace(hour=9)	no math
+Compare times	t1 < t2	same day
+Format	t.strftime("%H:%M")	string
+
+3️⃣ datetime — Operations (MOST IMPORTANT)
+Creation & current time
+Operation	Syntax
+Now (local)	datetime.now()
+Now (UTC)	datetime.now(timezone.utc)
+From timestamp	datetime.fromtimestamp(ts, tz=timezone.utc)
+Arithmetic
+Operation	Syntax	Result
+Add duration	dt + timedelta(hours=2)	datetime
+Subtract duration	dt - timedelta(days=1)	datetime
+Subtract datetimes	dt2 - dt1	timedelta
+Convert
+Conversion	Syntax
+To timestamp	dt.timestamp()
+To date	dt.date()
+To time	dt.time()
+Convert
+Conversion	Syntax
+To timestamp	dt.timestamp()
+To date	dt.date()
+To time	dt.time()
+
+Comparison
+Operation	Rule
+dt1 < dt2	both naive OR both aware
+Mixed TZ	❌ error
+
+4️⃣ timedelta — Operations
+timedelta(
+    days=0,
+    seconds=0,
+    microseconds=0,
+    milliseconds=0,
+    minutes=0,
+    hours=0,
+    weeks=0
+)
+
+Creation
+Unit	Example
+Days	timedelta(days=2)
+Seconds	timedelta(seconds=3600)
+Mixed	timedelta(days=1, hours=2)
+Arithmetic
+Operation	Result
+dt + td	datetime
+d + td	date
+td1 + td2	timedelta
+td * 2	timedelta
+
+td.days
+td.seconds
+td.microseconds
+td.total_seconds() - gets fulls econds or  value stiored fuly in seconds.
+
+5️⃣ timezone — Operations
+Built-in usage
+Operation	Syntax
+UTC timezone	timezone.utc
+Fixed offset	timezone(timedelta(hours=5, minutes=30))
+
+
+astimezone() — explained clearly
+What it is
+
+astimezone() converts a timezone-aware datetime from one timezone to another
+while preserving the exact moment in time.
+
+⏰ Same instant, different clock reading.
+
+Basic definition
+datetime.astimezone(tz)
+
+
+Works on aware datetime only
+
+Returns a new datetime
+
+Adjusts clock time + tzinfo
+
+
+dt_ist = dt_utc.astimezone(ist)
+
+strftime()
+have for all as  method
+datetime.datetime	✅	method
+datetime.date	✅	method
+datetime.time	✅	method
+
+
+.isoformat(sep='T',timsec='auto')
+Parameter	Meaning
+sep	Separator between date & time ('T' or ' ')
+timespec	Level of time detail
+timespec values
+'auto'        # default
+'hours'
+'minutes'
+'seconds'
+'milliseconds'
+'microseconds'
+
+----
+
+ 
+zoneinfo
+
+zoneinfo — Real Timezones (Python 3.9+)
+
+Use zoneinfo for real-world timezones with DST rules
+(datetime.timezone is fixed-offset only)
+from zoneinfo import ZoneInfo
+
+dt = datetime.now(ZoneInfo("UTC"))
+from datetime import datetime
+
+dt = datetime(2026, 1, 5, 10, 0, tzinfo=ZoneInfo("UTC"))
+
+dt_utc = datetime.now(ZoneInfo("UTC"))
+dt_tokyo = dt_utc.astimezone(ZoneInfo("Asia/Tokyo"))
+
+
+
+----
+
+io
+The io module provides Python’s core I/O system.
+It defines how files, memory buffers, and streams work.
+Python io.FileIO
+
+What it is:
+
+The raw, OS-level file interface in Python
+
+Works directly with file descriptors
+
+Binary only (bytes)
+
+No buffering — every read/write goes to the OS
+
+Think of it as the foundation that BufferedReader, BufferedWriter, and BufferedRandom sit on top of.
+
+1️⃣ Key Features
+Feature	Details
+Binary only	Works with bytes, not str
+Read/write modes	'rb', 'wb', 'r+b', 'w+b'
+Direct OS access	No internal buffering; slower for small reads/writes
+Random access	Supports seek(offset, whence) and tell()
+Close file	close() releases OS resources
+2️⃣ Key Methods
+Method	Purpose
+read(n)	Read up to n bytes
+write(b)	Write bytes b to file
+seek(offset, whence=0)	Move file pointer
+tell()	Current file pointer position
+close()	Close the file descriptor
+
+
+io.BufferedWriter
+Streaming write-only buffer (to file / socket)
+What it is
+
+A streaming binary writer
+
+Writes small chunks → flushes in large chunks
+
+Sits on top of FileIO
+
+write(b)
+flush()
+close()
+
+import io
+
+raw = io.FileIO("out.bin", "wb")
+buf = io.BufferedWriter(raw)
+
+buf.write(b"hello ")
+buf.write(b"world")
+buf.flush()   # force write now
+buf.close()
+
+io.BufferedRandom
+Streaming read + write buffer
+What it is
+
+Combines BufferedReader + BufferedWriter
+
+Supports random access
+
+Binary only
+
+You ↔ BufferedRandom ↔ OS
+
+
+read(n)
+write(b)
+seek(pos)
+tell()
+flush()
+
+
+import io
+
+raw = io.FileIO("data.bin", "r+b")
+buf = io.BufferedRandom(raw)
+
+buf.write(b"ABC")
+buf.seek(0)
+print(buf.read(3))   # b'ABC'
+buf.close()
+
+
+
+io.BytesIO
+Buffered stream entirely in memory
+What it is
+
+A fake file
+
+No disk
+
+Very fast
+
+Still streaming
+
+
+You → BytesIO → RAM
+
+
+
+from io import BytesIO
+
+buf = BytesIO()
+buf.write(b"packet1")
+buf.write(b"packet2")
+buf.seek(0)
+
+print(buf.read())  # b'packet1packet2'
+
+BufferedReader = read-only streaming
+
+Use when you want to read a large file sequentially, efficiently.
+
+Example: log readers, protocol parsers, streaming downloads.
+📘 Python Buffered I/O — Complete Focus
+Class	Purpose	Read	Write	Seek	Memory / Disk	Streaming?	Notes
+BufferedReader	Read-only binary stream	✅	❌	✅	Disk / raw	✅	Efficient sequential read, peek() + readline()
+BufferedWriter	Write-only binary stream	❌	✅	❌	Disk / raw	✅	Buffered writes, flush with flush() or close()
+BufferedRandom	Read & write binary stream	✅	✅	✅	Disk / raw	✅	Random access files, read/write patching
+BytesIO	Memory-based binary stream	✅	✅	✅	RAM only	✅	In-memory file, fast, used for testing or buffers
+
+import io
+
+raw = io.FileIO("data.bin", "rb")
+buf = io.BufferedReader(raw)
+peek - is  only for the  BufferedReader which  peeks without moving cursor.
+print(buf.read(5))       # read first 5 bytes
+print(buf.readline())    # read until b'\n'
+print(buf.peek(10))      # look ahead 10 bytes without consuming
+
+buf.close()
+
+io.StringIO — What it is
+
+In-memory text stream (like BytesIO, but for strings, not bytes)
+
+Acts like a file for str objects
+
+No disk
+
+Text only, unlike BytesIO which is binary
+
+from io import StringIO
+
+buf = StringIO()
+buf.write("Hello ")
+buf.write("world")
+buf.seek(0)
+print(buf.read())  # Hello world
+
+
+
+---
+
+os
+unction / Class	Description	Example
+os.name	Returns the OS name ('posix', 'nt', etc.)	os.name → 'nt'
+os.getcwd()	Get current working directory	os.getcwd() → 'C:\\Users\\Hej'
+os.chdir(path)	Change current working directory	os.chdir('C:\\Temp')
+os.listdir(path='.')	List files/directories in a path	os.listdir('.') → ['file.txt', 'folder']
+os.mkdir(path, mode=0o777)	Create a new directory	os.mkdir('new_folder')
+os.makedirs(path, exist_ok=False)	Recursively create directories	os.makedirs('a/b/c', exist_ok=True)
+os.remove(path)	Delete a file	os.remove('file.txt')
+os.rmdir(path)	Remove empty directory	os.rmdir('folder')
+os.removedirs(path)	Remove directories recursively	os.removedirs('a/b/c')
+os.rename(src, dst)	Rename a file/directory	os.rename('old.txt','new.txt')
+os.stat(path)	File metadata (size, time, etc.)	os.stat('file.txt')
+os.path.join(*paths)	Join paths	os.path.join('folder','file.txt') → 'folder\\file.txt'
+os.path.exists(path)	Check if path exists	os.path.exists('file.txt') → True/False
+os.path.isdir(path)	Check if path is a directory	os.path.isdir('folder') → True
+os.path.isfile(path)	Check if path is a file	os.path.isfile('file.txt') → True
+os.environ	Access environment variables	os.environ['PATH']
+os.system(cmd)	Execute shell command	os.system('dir')
+os.walk(top)	Iterate over directories recursively	for root, dirs, files in os.walk('.'): print(root, files)
+os.getpid()	Current process ID	os.getpid() → 12345
+os.getlogin()	Current logged-in user	os.getlogin() → 'Hej'
+os.urandom(n)	Generate random bytes	os.urandom(8) → b'\x9f\xab...'
+os.path.splitext(path)	Split filename and extension	os.path.splitext('file.txt') → ('file', '.txt')
+os.chmod(), os.utime() – for setting permissions and timestamps (mostly scripts for deployment or system tools)
+os.path.abspath(path)  path → a relative or partial path. Returns → the full absolute path as a string.
+os.path.dirname(path) Get the directory name of a path
+os.path.basename(path)  Get the file name from a path
+OS Information & Environment
+Function / Property	Description	Example	Notes / Tips
+os.name	Returns a string identifying the OS type	'posix' (Linux/macOS), 'nt' (Windows)	Useful for writing cross-platform scripts.
+os.environ	Access environment variables	os.environ['PATH']	You can also use os.environ.get('HOME') to avoid KeyError.
+os.getpid()	Current process ID	12345	Useful for logging, spawning child processes.
+os.getlogin()	Current logged-in user	'Hej'	Sometimes raises errors in services; prefer getpass.getuser() for robustness.
+os.urandom(n)	Generate n cryptographically secure random bytes	os.urandom(8) → b'\x9f\xab...'	Often used for security keys, salts, or tokens.
+2. Current Working Directory (CWD) & Navigation
+Function	Description	Example	Notes / Tips
+os.getcwd()	Get current working directory	'C:\\Users\\Hej'	Often first step before relative path operations.
+os.chdir(path)	Change current working directory	os.chdir('C:\\Temp')	Raises FileNotFoundError if path does not exist.
+os.path.abspath(path)	Returns absolute path	os.path.abspath('file.txt') → 'C:\\Users\\Hej\\file.txt'	Converts relative paths to absolute.
+os.path.dirname(path)	Get directory part of path	os.path.dirname('C:\\Temp\\file.txt') → 'C:\\Temp'	Useful for splitting paths.
+os.path.basename(path)	Get file/final component	os.path.basename('C:\\Temp\\file.txt') → 'file.txt'	Combine with dirname() to navigate paths programmatically.
+3. Directory & File Listing
+Function	Description	Example	Notes / Tips
+os.listdir(path='.')	List files & directories	['file.txt', 'folder']	Does not return full paths. Combine with os.path.join() for safety.
+os.walk(top)	Recursive directory traversal	for root, dirs, files in os.walk('.'): print(root, files)	Produces (root, dirs, files) tuples. Very useful for search scripts.
+os.path.exists(path)	Check if file/dir exists	os.path.exists('file.txt') → True/False	Works for files and directories.
+os.path.isdir(path)	Check if path is directory	os.path.isdir('folder') → True	
+os.path.isfile(path)	Check if path is file	os.path.isfile('file.txt') → True	
+4. Creating, Renaming, Deleting Files & Directories
+Function	Description	Example	Notes / Tips
+os.mkdir(path, mode=0o777)	Create a single directory	os.mkdir('new_folder')	Fails if parent directories don’t exist.
+os.makedirs(path, exist_ok=False)	Recursively create directories	os.makedirs('a/b/c', exist_ok=True)	exist_ok=True avoids FileExistsError.
+os.rmdir(path)	Remove empty directory	os.rmdir('folder')	Only works if directory is empty.
+os.removedirs(path)	Remove directories recursively	os.removedirs('a/b/c')	Removes parent dirs if empty.
+os.remove(path)	Delete a file	os.remove('file.txt')	Raises FileNotFoundError if missing.
+os.rename(src, dst)	Rename a file or directory	os.rename('old.txt','new.txt')	Can also move files across directories.
+os.chmod(path, mode)	Change file permissions	os.chmod('file.txt', 0o644)	Works mostly on Unix.
+os.utime(path, times)	Update timestamps	os.utime('file.txt', (atime, mtime))	atime = access, mtime = modification.
+5. File Metadata
+Function	Description	Example	Notes / Tips
+os.stat(path)	Returns metadata	stat = os.stat('file.txt')	Access size, creation/modification time, mode, etc.: stat.st_size, stat.st_mtime
+os.path.splitext(path)	Split filename and extension	os.path.splitext('file.txt') → ('file', '.txt')	Useful for file type detection.
+os.path.join(*paths)	Join paths safely	os.path.join('folder','file.txt') → 'folder\\file.txt'	Always prefer join() over manual string concatenation for cross-platform scripts.
+6. Running System Commands
+Function	Description	Example	Notes / Tips
+os.system(cmd)	Execute a shell command	os.system('dir')	Returns exit code, not output. Use subprocess.run() for capturing stdout/stderr.
+
+os.path.expanduser("~") - to get current users main directory
+
+
+---
+
+subprocess
+ubprocess lets Python spawn new processes, connect to their input/output/error pipes, and get their exit codes.
+
+It replaces older modules/functions like os.system(), os.spawn*(), and popen().
+
+You can:
+
+Run shell commands
+
+Capture stdout/stderr
+
+Communicate with child processes
+
+Control input/output streams
+
+Wait for process completion
+
+Main Functions
+Function	Description	Example	Notes
+subprocess.run()	Run command, wait for completion, returns a CompletedProcess object	subprocess.run(['ls', '-l'])	Preferred for most cases (Python 3.5+)
+subprocess.Popen()	More advanced: run command asynchronously, communicate with it	p = subprocess.Popen(['ping','google.com'], stdout=subprocess.PIPE)	Gives full control of stdin/stdout/stderr
+subprocess.call()	Run command, returns exit code	subprocess.call(['echo','hello']) → 0	Similar to run(), less flexible
+subprocess.check_call()	Run command, raises exception if return code ≠ 0	subprocess.check_call(['ls','/notexist']) → raises CalledProcessError	Useful for scripts where failure should stop execution
+subprocess.check_output()	Run command, returns stdout as bytes	output = subprocess.check_output(['ls'])	Can decode with output.decode()
+
+
+Important Parameters in subprocess.run() / Popen()
+Parameter	Description
+args	List of program arguments (or string if shell=True)
+shell	If True, command is executed through the shell
+capture_output	Captures stdout/stderr if True
+stdout, stderr, stdin	Can redirect to PIPE, file, or DEVNULL
+text / encoding	Decodes bytes to string
+check	If True, raises CalledProcessError on non-zero exit
+
+
+subprocess.PIPE
+
+Definition:
+PIPE is a special constant in subprocess used to create a new pipe to the child process.
+
+Pipes let Python communicate with the process:
+
+Send data to its stdin
+
+Read data from its stdout
+
+Read errors from its stderr
+
+Think of it like a tube connecting Python and the process, so you can programmatically read/write instead of printing to console.
+
+Where subprocess.PIPE can be used
+
+subprocess.PIPE is a special placeholder that tells Python:
+
+“Create a pipe for this stream so I can read/write it from Python.”
+
+It can be used in any function that runs a subprocess, including:
+
+subprocess.Popen() – most common
+
+You explicitly control stdin, stdout, stderr.
+
+Example:
+
+import subprocess
+
+p = subprocess.Popen(['echo', 'Hello'], stdout=subprocess.PIPE, text=True)
+output, _ = p.communicate()
+print(output)
+
+
+subprocess.run() (Python ≥3.5)
+
+run() is a wrapper around Popen.
+
+You can specify stdout=subprocess.PIPE, stderr=subprocess.PIPE, or stdin=subprocess.PIPE.
+
+Example:
+
+result = subprocess.run(['echo', 'Hello'], stdout=subprocess.PIPE, text=True)
+print(result.stdout)
+
+
+subprocess.check_output()
+
+Internally uses PIPE for stdout to capture output.
+
+Example:
+
+output = subprocess.check_output(['echo', 'Hello'], text=True)
+print(output)
+
+
+Here, you don’t need to manually write stdout=PIPE; check_output() handles it.
+
+
+1. What is subprocess.Popen?
+
+Popen stands for “process open”.
+
+It launches a child process and gives you full control over it.
+
+Unlike subprocess.run(), it does not wait for the process to finish unless you explicitly call wait() or communicate().
+
+Basic usage:
+
+import subprocess
+
+p = subprocess.Popen(['echo', 'Hello'])
+p.wait()  # wait for process to complete
+
+
+['echo', 'Hello'] → command and arguments (list form, safer than shell string)
+
+p is a Popen object representing the child process.
+
+2. What is subprocess.PIPE?
+
+PIPE is a special object that tells Python:
+
+“Create a communication channel (pipe) for this stream so I can read/write from Python.”
+
+Can be used for:
+
+stdin → send input to child process
+
+stdout → read output from child process
+
+stderr → read errors from child process
+
+Example constants:
+
+. Why .communicate() is safe
+
+.communicate() is designed to avoid deadlocks:
+
+It simultaneously reads stdout and stderr and sends input if provided.
+
+It waits for the process to finish.
+
+It avoids pipe buffer problems because it reads until EOF internally.
+
+Example (safe):
+
+from subprocess import Popen, PIPE
+
+p = Popen(['echo', 'Hello Safe'], stdout=PIPE, stderr=PIPE, text=True)
+output, errors = p.communicate()
+print("Captured:", output)
+
+
+No deadlock, even if the output is large.
+
+Always the recommended method for reading process output.
+
+Important Parameters in subprocess.run() / Popen()
+Parameter	Description
+args	List of program arguments (or string if shell=True)
+shell	If True, command is executed through the shell
+capture_output	Captures stdout/stderr if True
+stdout, stderr, stdin	Can redirect to PIPE, file, or DEVNULL
+text / encoding	Decodes bytes to string
+check	If True, raises CalledProcessError on non-zero exit
+---
+
+
+
+shutil
+hat is shutil?
+
+shutil = shell utilities for Python
+
+Provides high-level operations on files and directories, like:
+
+Copy files/directories
+
+Move/rename files/directories
+
+Delete directories
+
+Archive/unarchive
+
+Disk usage statistics
+
+Built-in module → no installation needed.
+
+. Common Functions
+Function	Description	Example	Notes
+shutil.copy(src, dst)	Copy file (contents only)	shutil.copy('file.txt','backup.txt')	Metadata (permissions) not copied
+shutil.copy2(src, dst)	Copy file + metadata	shutil.copy2('file.txt','backup.txt')	Includes timestamps
+shutil.copytree(src, dst, dirs_exist_ok=False)	Copy entire directory recursively	shutil.copytree('folder','backup_folder', dirs_exist_ok=True)	Python ≥3.8 supports dirs_exist_ok=True
+shutil.rmtree(path)	Delete directory recursively	shutil.rmtree('folder')	Be careful: permanent deletion
+shutil.move(src, dst)	Move or rename file or directory	shutil.move('file.txt','folder/file.txt')	Works across disks
+shutil.make_archive(base_name, format, root_dir)	Create archive (.zip, .tar, etc.)	shutil.make_archive('backup','zip','my_folder')	Format: 'zip', 'tar', 'gztar', 'bztar', 'xztar'
+shutil.unpack_archive(filename, extract_dir=None, format=None)	Extract archive	shutil.unpack_archive('backup.zip','restore')	Auto-detects format if not provided
+shutil.chown(path, user=None, group=None)	Change ownership of file	shutil.chown('file.txt', user='hej')	Unix only
+shutil.disk_usage(path)	Get disk usage	total, used, free = shutil.disk_usage('/')	Returns bytes
+shutil.which(cmd)	Find executable in PATH	shutil.which('python') → 'C:\\Python\\Python310\\python.exe'	Similar to Unix which
+
+
+----
+
+pathlib
+1. What is pathlib?
+
+pathlib provides a Path object instead of string paths.
+
+It is:
+
+Cross-platform (Windows / Linux / macOS)
+
+
+ore Classes
+Class	Meaning
+Path	Main class (auto-selects OS type)
+PosixPath	Linux / macOS paths
+WindowsPath	Windows paths
+PurePath	Path logic only (no filesystem access)
+
+Always use Path, not WindowsPath or PosixPath directly.
+
+3. Creating Path Objects
+from pathlib import Path
+
+p1 = Path('file.txt')
+p2 = Path('folder/file.txt')
+p3 = Path(r'C:\Users\Hej\file.txt')  # Windows
+
+Current working directory
+Path.cwd()
+
+Home directory
+Path.home()
+
+oining Paths (IMPORTANT)
+
+/ is overloaded to mean path joining:
+
+p = Path('folder') / 'sub' / 'file.txt'
+print(p)
+
+
+✔ Correct on all OS
+
+5. Path Properties
+p = Path('folder/file.txt')
+
+p.name        # 'file.txt'
+p.stem        # 'file'
+p.suffix      # '.txt'
+p.parent      # Path('folder')
+p.parents     # All parent directories
+
+Multiple suffixes
+Path('archive.tar.gz').suffixes
+# ['.tar', '.gz']
+
+6. Checking Paths
+p.exists()     # True / False
+p.is_file()    # True if file
+p.is_dir()     # True if directory
+
+
+Equivalent to:
+
+os.path.exists
+
+os.path.isfile
+
+os.path.isdir
+
+
+
+7. File Operations
+Reading files
+p = Path('file.txt')
+
+text = p.read_text()
+
+Writing files
+p.write_text("Hello pathlib")
+
+Binary data
+data = p.read_bytes()
+p.write_bytes(b'\x00\x01')
+
+
+✔ Automatically opens and closes files
+✔ Safer than manual open()
+
+
+
+Directory Operations
+Create directory
+Path('new_folder').mkdir()
+
+Create nested directories
+Path('a/b/c').mkdir(parents=True, exist_ok=True)
+
+Remove empty directory
+Path('empty').rmdir()
+
+9. Listing Files (Replacement for os.listdir & os.walk)
+List current directory
+for p in Path('.').iterdir():
+    print(p)
+
+Glob patterns
+Path('.').glob('*.py')     # non-recursive
+Path('.').rglob('*.py')   # recursive
+
+ile Metadata
+stat = Path('file.txt').stat()
+
+stat.st_size
+stat.st_mtime
+stat.st_mode
+
+11. Resolving Paths
+p = Path('file.txt')
+
+p.absolute()  # absolute path
+p.resolve()   # absolute + resolves symlinks
+
+12. Renaming, Moving, Deleting
+Rename / move
+p = Path('old.txt')
+p.rename('new.txt')
+
+Delete file
+Path('file.txt').unlink()
+
+13. pathlib + shutil
+
+pathlib handles paths
+shutil handles bulk operations
+
+import shutil
+from pathlib import Path
+
+shutil.copy(Path('a.txt'), Path('b.txt'))
+shutil.rmtree(Path('folder'))
+
+
+They work perfectly together.
+What Path.rglob() returns
+from pathlib import Path
+
+for p in Path('.').rglob('*'):
+    ...
+
+
+Each iteration gives ONE thing:
+
+Value	Type	Meaning
+p	Path	Full path to a file or directory
+
+✔ Already recursive
+✔ Already full path
+✔ Already a Path object
+
+2. What is a glob pattern?
+
+A glob pattern is a string with wildcards used to match file names.
+
+Common wildcards
+Pattern	Meaning
+*	Match any characters (except /)
+?	Match exactly one character
+[abc]	Match one character from set
+[0-9]	Match one digit
+**	Match directories recursively
+3. glob() (NON-recursive)
+Path('.').glob('*.py')
+
+
+✔ Matches .py files only in the current directory
+❌ Does NOT go into subdirectories
+
+Examples
+Path('.').glob('*')          # everything in current dir
+Path('.').glob('*.txt')      # all txt files
+Path('.').glob('data_?.csv') # data_1.csv, data_a.csv
+Path('.').glob('[ab]*.py')   # files starting with a or b
+
+
+File Metadata
+stat = Path('file.txt').stat()
+
+Attribute	Meaning
+st_size	File size (bytes)
+st_mtime	Modified time
+st_mode	Permissions
+
+4. rglob() (RECURSIVE)
+Path('.').rglob('*.py')
+
+
+✔ Matches .py files in current dir + all subdirs
+✔ Equivalent to glob('**/*.py')
+7. Return type
+
+Both glob() and rglob() return:
+
+Iterator[Path]
+
+
+Example:
+
+for p in Path('.').rglob('*.log'):
+    print(p, p.is_file())
+
+Assume:
+
+from pathlib import Path
+p = Path("folder/sub/archive.tar.gz")
+
+1. p.name
+p.name
+
+
+Result
+
+'archive.tar.gz'
+
+
+Type
+
+str
+
+
+✔ Final path component (file name with extensions)
+
+2. p.stem
+p.stem
+
+
+Result
+
+'archive.tar'
+
+
+Type
+
+str
+
+
+✔ File name without the LAST suffix only
+
+⚠️ Important:
+
+It removes only .gz, not .tar.gz
+
+3. p.suffix
+p.suffix
+
+
+Result
+
+'.gz'
+
+
+Type
+
+str
+
+
+✔ Only the last extension
+
+4. p.suffixes
+p.suffixes
+
+
+Result
+
+['.tar', '.gz']
+
+
+Type
+
+list[str]
+
+
+✔ All suffixes in order
+✔ Each element includes the dot
+
+5. p.parent
+p.parent
+
+
+Result
+
+Path('folder/sub')
+
+
+Type
+
+Path
+
+
+✔ Immediate parent directory
+✔ Always a Path object
+
+6. p.parents
+p.parents
+
+
+Result
+
+<PosixPath.parents>   # iterable
+
+Accessing elements
+p.parents[0]  # Path('folder/sub')
+p.parents[1]  # Path('folder')
+p.parents[2]  # Path('.')
+
+
+Type
+
+collections.abc.Sequence[Path]
+
+
+✔ Ordered from nearest → farthest
+✔ Does NOT include the path itself
+
+17. Resolving Paths
+p = Path('file.txt')
+
+p.absolute()  # Absolute path
+p.resolve()   # Absolute + resolves symlinks
+
+Difference
+
+absolute() → simple conversion
+
+resolve() → real filesystem resolution
+
+hat is Path.resolve()?
+Definition
+Path.resolve()
+
+
+Returns an absolute path and resolves symbolic links and .. / ..
+
+Example
+from pathlib import Path
+
+p = Path('./folder/../file.txt')
+
+print(p)              # folder/../file.txt
+print(p.absolute())   # C:\Users\Hej\project\folder\..\file.txt
+print(p.resolve())    # C:\Users\Hej\project\file.txt
+
+Key difference
+Method	What it does
+absolute()	Makes path absolute (no cleanup)
+resolve()	Makes absolute and normalizes path
+
+✔ Removes . and ..
+✔ Follows symlinks
+✔ Gives real filesystem path
+
+Important detail (exists or not)
+Path('missing.txt').resolve()
+
+
+On most systems, it still returns an absolute path
+
+It does not create the file
+
+It may raise an error if a parent directory does not exist (older Python / strict systems)
+
+
+-----
+
+
+platform
+
+. What is platform?
+
+The platform module provides information about the operating system, hardware, and Python runtime.
+
+It is used for:
+
+OS detection
+
+Architecture checks
+
+Platform-specific behavior
+
+Debugging / diagnostics
+
+Conditional logic (Windows vs Linux)
+
+📌 It is read-only → you can inspect, not control the system.
+
+Most important functions (you’ll actually use)
+platform.system()
+import platform
+platform.system()
+
+
+Returns
+
+'Windows'
+
+'Linux'
+
+'Darwin' (macOS)
+
+✔ Most common OS check
+✔ Preferred over os.name for readability
+
+platform.platform()
+platform.platform()
+
+
+Example output
+
+Windows-10-10.0.22631-SP0
+Linux-6.5.0-arch1-1-x86_64
+
+
+✔ Human-readable OS description
+✔ Good for logs, not logic
+
+platform.release()
+platform.release()
+
+
+Examples
+
+Windows: '10'
+
+Linux: '6.5.0-arch1-1'
+
+✔ OS release version
+
+platform.version()
+platform.version()
+
+
+✔ More detailed OS version string
+✔ Rarely used in logic
+
+3. Machine & architecture info
+platform.machine()
+platform.machine()
+
+
+Examples
+
+'x86_64'
+
+'AMD64'
+
+'arm64'
+
+✔ CPU type
+
+platform.architecture()
+platform.architecture()
+
+
+Returns
+
+('64bit', 'WindowsPE')
+
+
+✔ Bitness of Python binary
+⚠️ Not OS bitness — Python bitness
+
+4. Python runtime info
+platform.python_version()
+platform.python_version()
+
+
+Example:
+
+'3.12.1'
+
+platform.python_implementation()
+platform.python_implementation()
+
+
+Examples
+
+'CPython'
+
+'PyPy'
+
+'Jython'
+
+✔ Useful for performance-sensitive code
+
+platform.python_build()
+platform.python_build()
+
+
+Returns:
+
+('main', 'Dec  6 2023 21:45:01')
+
+5. Node & user info
+platform.node()
+platform.node()
+
+
+✔ Hostname of the machine
+✔ Useful in distributed systems/logging
+platform is for detecting and describing the OS, hardware, and Python runtime — not for filesystem or process control.
+
+What does platform.node() return?
+import platform
+platform.node()
+
+Returns
+
+The system’s network name (hostname)
+
+Examples
+OS	Example
+Windows	'DESKTOP-AB12CD'
+Linux	'archbox'
+macOS	'MacBook-Pro'
+Server	'prod-server-01'
+Type
+str
+
+Notes
+
+Same as computer name
+
+Same as socket.gethostname()
+
+Used for logging, clustering, diagnostics
+
+❌ Not guaranteed to be unique globally
+
+
+Function	Returns	Type	Example
+platform.system()	OS name	str	'Windows', 'Linux', 'Darwin'
+platform.platform()	Full platform string	str	'Windows-10-10.0.22631-SP0'
+platform.release()	OS release	str	'10', '6.5.0-arch1-1'
+platform.version()	OS version	str	'10.0.22631'
+platform.node()	Hostname	str	'DESKTOP-AB12CD'
+Hardware & architecture
+Function	Returns	Type	Example
+platform.machine()	Machine type	str	'x86_64', 'AMD64', 'arm64'
+platform.processor()	Processor name	str	'Intel64 Family 6 Model 165'
+platform.architecture()	Python bitness	tuple[str, str]	('64bit', 'WindowsPE
+Python runtime info
+Function	Returns	Type	Example
+platform.python_version()	Python version	str	'3.12.1'
+platform.python_version_tuple()	Version tuple	tuple[str, str, str]	('3','12','1')
+platform.python_implementation()	Python implementation	str	'CPython', 'PyPy'
+platform.python_compiler()	Compiler used	str	'MSC v.1937 64 bit'
+platform.python_build()	Build info	tuple[str, str]	('main', 'Dec 6 2023')
+platform.python_branch()	Source branch	str	'main'
+platform.python_revision()	Git revision	str	'abcdef123'
+
+
+platform.uname() (special)
+platform.uname()
+
+
+Returns a named tuple:
+
+uname_result(
+    system='Windows',
+    node='DESKTOP-AB12CD',
+    release='10',
+    version='10.0.22631',
+    machine='AMD64',
+    processor='Intel64'
+)
+----
+
+
+importlib
+importlib is the engine behind Python’s import statement.
+
+It allows you to:
+
+Import modules dynamically
+
+Reload modules
+
+Inspect module specs
+
+Build plugin systems
+
+Replace __import__ safely
+
+import foo is internally implemented using importlib.
+
+
+
+
+Most important functions (you’ll actually use)
+importlib.import_module()
+import importlib
+
+math = importlib.import_module('math')
+print(math.sqrt(16))
+
+
+Use case
+
+Module name known at runtime
+
+Plugins
+
+Import submodules
+importlib.import_module('os.path')
+
+4. Importing from packages dynamically
+module = importlib.import_module('json.encoder')
+
+5. Reloading modules
+importlib.reload()
+import importlib
+import mymodule
+
+importlib.reload(mymodule)
+
+
+✔ Re-executes module code
+✔ Keeps same module object
+⚠️ Existing references may not update
+
+Use only for:
+
+REPL
+
+Debugging
+
+Development tools
+
+6. Checking if a module exists
+importlib.util.find_spec()
+from importlib.util import find_spec
+
+if find_spec('numpy'):
+    print("Installed")
+else:
+    print("Not installed")
+
+
+✔ Does not import
+✔ Safe existence check
+
+7. Loading a module from a file path
+importlib.util.spec_from_file_location()
+from importlib.util import spec_from_file_location, module_from_spec
+
+spec = spec_from_file_location("plugin", "/path/plugin.py")
+module = module_from_spec(spec)
+spec.loader.exec_module(module)
+
+
+8. Import system concepts (important)
+ModuleSpec
+
+A ModuleSpec describes:
+
+Module name
+
+Loader
+
+Origin
+
+Package info
+
+You usually don’t create it manually — importlib does.
+
+9. importlib vs sys.path
+
+importlib uses sys.path
+
+You can modify sys.path, but it’s discouraged
+
+Prefer explicit loaders when possible
+
+10. Plugin system example (real-world)
+import importlib
+
+plugins = ['plugin_a', 'plugin_b']
+
+for name in plugins:
+    plugin = importlib.import_module(name)
+    plugin.run()
+
+11. Common mistakes
+
+❌ Using exec() instead of import
+❌ Modifying sys.path unnecessarily
+❌ Reloading in production code
+
+12. Summary table (most used APIs)
+Function	Purpose
+importlib.import_module()	Dynamic import
+importlib.reload()	Reload module
+importlib.util.find_spec()	Check module availability
+spec_from_file_location()	Load module from file
+module_from_spec()	Create module object
+
+----
+
+
+
+sys
+
+
+sys module — Detailed Learning Notes
+1. What is sys?
+
+The sys module provides direct access to the Python interpreter’s runtime environment.
+
+It lets you:
+
+Inspect interpreter state
+
+Read command-line arguments
+
+Control program exit
+
+Access standard streams
+
+Modify import paths (carefully)
+
+sys is about Python itself, not the OS (that’s os / platform).
+
+2. Most important attributes (you’ll use these often)
+sys.argv
+sys.argv
+
+
+Returns
+
+list[str]
+
+
+Example:
+
+python script.py hello 42
+
+['script.py', 'hello', '42']
+
+
+✔ Command-line arguments
+✔ Always strings
+
+sys.exit()
+sys.exit(0)
+sys.exit("Error occurred")
+
+
+Raises SystemExit
+
+Ends program immediately
+
+Non-zero → error exit
+
+Used in CLI tools.
+
+sys.platform
+sys.platform
+
+
+Examples:
+
+'win32'
+
+'linux'
+
+'darwin'
+
+✔ Low-level OS identifier
+✔ Faster than platform.system()
+
+sys.version
+sys.version
+
+
+Human-readable Python version string.
+
+sys.version_info
+sys.version_info
+
+
+Returns:
+
+sys.version_info(major=3, minor=12, micro=1, ...)
+
+
+✔ Safe version comparisons
+
+if sys.version_info >= (3, 10):
+    ...
+
+3. Standard I/O streams (VERY IMPORTANT)
+sys.stdin
+
+Input stream
+
+Usually keyboard
+
+sys.stdout
+
+Normal output (print())
+
+sys.stderr
+
+Error output
+
+Example:
+
+print("ok", file=sys.stdout)
+print("error", file=sys.stderr)
+
+4. Redirecting output (manual)
+sys.stdout = open('out.txt', 'w')
+print("goes to file")
+
+
+⚠️ Advanced use — prefer contextlib.redirect_stdout
+
+5. Import system internals
+sys.path
+sys.path
+
+
+List of directories Python searches for imports
+
+Includes current script directory
+
+⚠️ Modifying it is usually discouraged.
+
+sys.modules
+sys.modules
+
+
+Dict of all loaded modules
+
+Used by importlib
+
+import sys
+sys.modules['math']
+
+6. Interpreter & memory info
+sys.getsizeof()
+sys.getsizeof(obj)
+
+
+✔ Memory size in bytes (shallow)
+
+sys.getrecursionlimit()
+sys.getrecursionlimit()
+
+sys.setrecursionlimit(n)
+
+⚠️ Dangerous if misused.
+
+7. Execution environment
+sys.executable
+sys.executable
+
+
+✔ Path to Python interpreter
+
+sys.prefix
+
+✔ Virtual environment base path
+
+8. Advanced / less-used but important
+Attribute	Purpose
+sys.flags	Interpreter flags
+sys.gettrace()	Debugger detection
+sys.settrace()	Tracing
+sys.stdin.isatty()	Terminal check
+9. sys vs platform vs os
+Task	Module
+Python runtime	sys
+OS identification	platform
+OS interaction	os
+File paths	pathlib
+Processes	subprocess
+
+Related attributes
+Attribute	Meaning
+sys.prefix	Current environment base
+sys.base_prefix	Original system Python
+sys.exec_prefix	Platform-dependent files
+sys.base_exec_prefix	Base exec prefix
+
+
+2. sys.prefix vs sys.exec_prefix
+Attribute	Meaning
+sys.prefix	Base path for pure Python libraries
+sys.exec_prefix	Base path for platform-dependent files
+
+Usually they are the same, but not always.
+
+3. What are “platform-dependent files”?
+
+These include:
+
+.pyd (Windows)
+
+.so (Linux/macOS)
+
+C extensions
+
+Interpreter-specific binaries
+
+These files:
+
+Depend on OS
+
+Depend on CPU architecture
+
+Depend on Python build
+
+4. Example: typical system Python
+Linux
+sys.prefix       → /usr
+sys.exec_prefix  → /usr
+
+
+Pure Python:
+
+/usr/lib/python3.12/
+
+
+Compiled extensions:
+
+/usr/lib/python3.12/lib-dynload/
+
+
+Same prefix → different subfolders.
+
+Windows
+sys.prefix       → C:\Python312
+sys.exec_prefix  → C:\Python312
+
+
+Compiled extensions:
+
+C:\Python312\DLLs
+
+5. When do they differ?
+
+They differ mainly in:
+
+Cross-compiled Python
+
+Some Unix builds
+
+Custom embedded Python
+
+Advanced packaging setups
+
+Example:
+
+sys.prefix       → /usr
+sys.exec_prefix  → /usr/local
+
+Virtual environments (IMPORTANT)
+
+When a venv is active:
+
+sys.prefix             # venv directory
+sys.exec_prefix        # venv directory
+sys.base_prefix        # system Python
+sys.base_exec_prefix   # system Python
+
+Example
+sys.prefix            → /home/user/project/.venv
+sys.exec_prefix       → /home/user/project/.venv
+sys.base_prefix       → /usr
+sys.base_exec_prefix  → /usr
+
+
+-----
+
+
+stat
+The stat module provides constants and helper functions to interpret file metadata returned by:
+
+os.stat()
+
+Path.stat()
+
+📌 It does NOT read files
+📌 It does NOT access filesystem by itself
+
+. Where stat is used
+import os
+import stat
+
+info = os.stat("file.txt")
+
+
+or
+
+from pathlib import Path
+info = Path("file.txt").stat()
+
+
+Both return a stat result object.
+
+3. What does stat() return?
+info = Path("file.txt").stat()
+
+
+Type:
+
+os.stat_result
+
+
+It behaves like:
+
+tuple
+
+object with attributes
+
+4. Most important stat attributes
+Attribute	Meaning
+st_mode	File type + permissions
+st_size	File size (bytes)
+st_mtime	Last modification time
+st_atime	Last access time
+st_ctime	Metadata change time (creation on Windows)
+st_ino	Inode number (Unix)
+st_dev	Device ID
+5. st_mode — the MOST IMPORTANT part
+
+st_mode encodes:
+
+File type
+
+Permission bits
+
+You should never inspect it manually — use stat.
+
+6. Checking file type (correct way)
+import stat
+
+mode = info.st_mode
+
+stat.S_ISREG(mode)   # regular file
+stat.S_ISDIR(mode)   # directory
+stat.S_ISLNK(mode)   # symlink
+stat.S_ISCHR(mode)   # char device
+stat.S_ISBLK(mode)   # block device
+
+Example
+if stat.S_ISDIR(info.st_mode):
+    print("Directory")
+
+7. Permission bits
+Owner / Group / Others
+Constant	Meaning
+stat.S_IRUSR	Owner read
+stat.S_IWUSR	Owner write
+stat.S_IXUSR	Owner execute
+stat.S_IRGRP	Group read
+stat.S_IROTH	Others read
+Check permissions (bitwise)
+if info.st_mode & stat.S_IRUSR:
+    print("Owner can read")
+
+8. Common permission masks
+Constant	Meaning
+stat.S_IRWXU	Owner rwx
+stat.S_IRWXG	Group rwx
+stat.S_IRWXO	Others rwx
+9. Changing permissions (chmod)
+import os
+import stat
+
+os.chmod("file.txt", stat.S_IRUSR | stat.S_IWUSR)
+
+
+Meaning:
+
+rw-------
+
+10. Converting permissions to human-readable
+stat.filemode(info.st_mode)
+
+
+Example:
+
+'-rw-r--r--'
+
+
+✔ Very useful for debugging
+✔ Like ls -l
+
+11. stat + pathlib (best combo)
+from pathlib import Path
+import stat
+
+p = Path("file.txt")
+mode = p.stat().st_mode
+
+if stat.S_ISREG(mode):
+    print("Regular file")
+
+12. When should YOU use stat?
+
+Use stat when:
+
+You need low-level file type checks
+
+You need permission inspection
+
+You are writing tools, installers, deployment scripts
+
+You want Unix-style permission logic
+
+❌ Not needed for normal file reading/writing
+
+
+-----
+
+
+glob
+2. glob module
+What is glob?
+
+glob finds filesystem paths that match a wildcard pattern.
+
+It actually reads directories and returns existing paths.
+
+Basic usage
+import glob
+
+glob.glob('*.py')
+
+
+Returns
+
+list[str]
+
+
+Example:
+
+['main.py', 'test.py']
+
+Recursive glob
+glob.glob('**/*.py', recursive=True)
+
+
+✔ Searches subdirectories
+✔ Uses **
+
+Iterator version (preferred)
+glob.iglob('*.txt')
+
+
+✔ Returns iterator
+✔ Lower memory usage
+If you want files in reverse order, you must reverse manually:
+
+files = glob.glob('*.py')
+files.reverse()  # in-place reverse
+
+
+----
+
+
+fnmatch
+fnmatch module
+What is fnmatch?
+
+fnmatch checks whether a string matches a glob-style pattern.
+
+It does NOT access the filesystem.
+
+Basic usage
+import fnmatch
+
+fnmatch.fnmatch('file.txt', '*.txt')
+
+
+Returns
+
+True
+
+Filter a list
+files = ['a.txt', 'b.py', 'c.txt']
+fnmatch.filter(files, '*.txt')
+
+
+Returns
+
+['a.txt', 'c.txt']
+
+4. Other ranges
+
+[a-z] → one lowercase letter
+
+[A-Z] → one uppercase letter
+
+[aeiou] → one of the listed letters
+
+Negation
+
+[!0-9] → any character that is NOT a digit
+
+
+-----
+
+
+argparse
+. What is argparse?
+
+Standard library for parsing command-line arguments
+
+Replaces older modules like optparse
+
+Automatically generates:
+
+--help messages
+
+Argument parsing errors
+
+Type conversion
+
+Makes your Python script CLI-ready in a clean, maintainable way.
+
+Concept / Feature	What it Does	Example
+ArgumentParser	Main class to define CLI interface	parser = argparse.ArgumentParser()
+Positional arguments	Required arguments identified by position	parser.add_argument("filename")
+Optional arguments	Optional flags with - or --	parser.add_argument("--verbose")
+Short & long flags	Multiple names for same option	-v and --verbose
+Automatic --help	Generates help text automatically	python app.py --help
+Type conversion	Converts input to desired type	type=int
+Default values	Value used if argument not provided	default=10
+Required options	Forces optional argument to be required	required=True
+Choices	Restricts allowed values	choices=["dev", "prod"]
+Boolean flags	Enable/disable features	action="store_true"
+Multiple values	Accepts more than one value	nargs="+"
+Argument groups	Organize help output	add_argument_group()
+Subcommands	Git-style commands	git commit, git push
+Error handling	Auto error messages & exit	Invalid args → usage shown
+Namespace object	Parsed arguments container	args.filename
+Custom help text	Description per argument	help="input file"
+
+import argparse
+
+parser = argparse.ArgumentParser(description="File processor")
+parser.add_argument("file", help="Input file")
+parser.add_argument("-v", "--verbose", action="store_true")
+parser.add_argument("--count", type=int, default=1)
+
+args = parser.parse_args()
+
+
+
+import argparse
+
+parser = argparse.ArgumentParser(
+    prog="tool",
+    description="Project management CLI"
+)
+
+subparsers = parser.add_subparsers(
+    title="commands",
+    dest="command",
+    required=True
+)
+
+# init command
+init_parser = subparsers.add_parser("init", help="Initialize project")
+init_parser.add_argument("--name", required=True)
+
+# build command
+build_parser = subparsers.add_parser("build", help="Build project")
+build_parser.add_argument("--release", action="store_true")
+
+args = parser.parse_args()
+
+if args.command == "init":
+    print(f"Initializing project: {args.name}")
+
+elif args.command == "build":
+    if args.release:
+        print("Building release version")
+    else:
+        print("Building debug version")
+CLI Usage Examples
+pgsql
+Copy code
+$ tool init --name MyApp
+Initializing project: MyApp
+
+$ tool build
+Building debug version
+
+$ tool build --release
+Building release version
+
+Key Options You Should Use
+Option	Where	Purpose
+description	ArgumentParser	Top help text
+help	add_parser, add_argument	Short one-line help
+metavar	add_argument	Clean parameter names
+choices	add_argument	Valid values
+epilog	ArgumentParser	Examples / notes
+formatter_class	ArgumentParser	Better formatting
+Improved (Professional) Version of Your CLI
+import argparse
+
+parser = argparse.ArgumentParser(
+    prog="tool",
+    description="Project management CLI tool",
+    epilog=(
+        "Examples:\n"
+        "  tool init --name MyApp\n"
+        "  tool build\n"
+        "  tool build --release\n"
+    ),
+    formatter_class=argparse.RawDescriptionHelpFormatter
+)
+
+subparsers = parser.add_subparsers(
+    title="commands",
+    dest="command",
+    required=True
+)
+
+# -------- init command --------
+init_parser = subparsers.add_parser(
+    "init",
+    help="Initialize a new project",
+    description="Create a new project structure"
+)
+init_parser.add_argument(
+    "--name",
+    metavar="PROJECT_NAME",
+    required=True,
+    help="Name of the project to create"
+)
+
+# -------- build command --------
+build_parser = subparsers.add_parser(
+    "build",
+    help="Build the project",
+    description="Compile and prepare the project"
+)
+build_parser.add_argument(
+    "--release",
+    action="store_true",
+    help="Build optimized release version"
+)
+
+args = parser.parse_args()
+
+if args.command == "init":
+    print(f"Initializing project: {args.name}")
+
+elif args.command == "build":
+    if args.release:
+        print("Building release version")
+    else:
+        print("Building debug version")
+
+What the Help Output Looks Like
+tool --help
+usage: tool [-h] {init,build} ...
+
+Project management CLI tool
+
+commands:
+  init     Initialize a new project
+  build    Build the project
+
+Examples:
+  tool init --name MyApp
+  tool build
+  tool build --release
+
+tool init --help
+usage: tool init --name PROJECT_NAME
+
+Create a new project structure
+
+options:
+  --name PROJECT_NAME   Name of the project to create
+
+tool build --help
+usage: tool build [--release]
+
+Compile and prepare the project
+
+options:
+  --release   Build optimized release version
+
+Extra Professional Touches (Optional but Recommended)
+1️⃣ Version flag
+parser.add_argument("--version", action="version", version="tool 1.0.0")
+
+2️⃣ Default command functions (clean dispatch)
+def init_cmd(args):
+    print(f"Initializing project: {args.name}")
+
+def build_cmd(args):
+    print("Building release version" if args.release else "Building debug version")
+
+init_parser.set_defaults(func=init_cmd)
+build_parser.set_defaults(func=build_cmd)
+
+args = parser.parse_args()
+args.func(args)
+
+
+
+What is metavar in argparse?
+
+metavar controls how the argument’s value is displayed in help messages.
+
+👉 It is only for display
+👉 It does NOT affect parsing or behavior
+
+Default behavior (no metavar)
+parser.add_argument("--name")
+
+
+Help output:
+
+--name NAME
+
+
+NAME is automatically derived from the argument name.
+
+Using metavar
+parser.add_argument("--name", metavar="PROJECT_NAME")
+
+
+Help output:
+
+--name PROJECT_NAME
+
+
+✔ Clear
+✔ More descriptive
+✔ Professional-looking
+----
+
+
+signal
+
+The signal module allows you to handle asynchronous events (signals) sent to your program by the OS or other programs.
+
+Signals are notifications sent to a process to tell it that something happened, like:
+
+SIGINT → Ctrl+C pressed
+
+SIGTERM → Termination request
+
+SIGALRM → Timer expired
+
+⚠️ Note: Signals are mostly for Unix/Linux. Windows support is limited (like only SIGINT, SIGBREAK, SIGABRT, SIGTERM).
+
+Common Signals
+Signal	Meaning	Notes
+SIGINT	Interrupt (Ctrl+C)	Can be caught
+SIGTERM	Terminate process	Can be caught
+SIGKILL	Kill process	Cannot be caught
+SIGALRM	Alarm clock (timer)	Can be caught
+SIGHUP	Terminal hangup	Can reload configs
+SIGUSR1/2	User-defined signals	Custom actions
+
+
+. Main Functions
+Function	Description
+signal.signal(signalnum, handler)	Set a handler for a signal
+signal.getsignal(signalnum)	Get the current handler
+signal.alarm(seconds)	Schedule a SIGALRM after seconds
+signal.pause()	Wait until a signal arrives
+signal.raise_signal(signalnum)	Send a signal to the current process
+
+
+. Signal Handlers
+
+A handler is a function that runs when a signal is received.
+
+Example: Ctrl+C handler
+
+import signal
+import time
+
+def handle_sigint(signum, frame):
+    print(f"Caught signal {signum}! Exiting gracefully...")
+    exit(0)
+
+signal.signal(signal.SIGINT, handle_sigint)
+
+print("Press Ctrl+C to exit")
+while True:
+    time.sleep(1)
+
+
+Explanation:
+
+signum → the signal number
+
+frame → current stack frame (can inspect if needed)
+
+5. Using Alarms
+import signal
+import time
+
+def timeout_handler(signum, frame):
+    print("Time's up!")
+
+signal.signal(signal.SIGALRM, timeout_handler)
+signal.alarm(5)  # triggers SIGALRM in 5 seconds
+
+print("Waiting...")
+time.sleep(10)  # program will be interrupted after 5 seconds
+
+6. Default, Ignore, and Custom Handlers
+
+signal.SIG_DFL → default action
+
+signal.SIG_IGN → ignore the signal
+
+import signal
+
+signal.signal(signal.SIGINT, signal.SIG_IGN)  # Ctrl+C ignored
+signal.signal(signal.SIGTERM, signal.SIG_DFL)  # default terminate
+
+
+----
+
+
+
+atexit
+
+The atexit module allows you to register functions that are automatically called when your program exits.
+
+This is useful for:
+
+Cleaning up resources (files, sockets, temporary data)
+
+Saving program state
+
+Main Functions
+Function	Description
+atexit.register(func, *args, **kwargs)	Register a function to be called at normal program exit
+atexit.unregister(func)	Unregister a previously registered function
+
+Only functions registered with atexit.register() are executed at normal exit.
+Functions are NOT called if the program crashes (like with os._exit(), segfaults, or killed processes).
+
+-----
+
+
+tempfile
+The tempfile module lets you create temporary files and directories in a safe and convenient way. These are often used for:
+
+Storing data temporarily during program execution
+
+Avoiding conflicts with existing files
+
+Automatic cleanup when done
+
+Works on Windows and Unix, cross-platform.
+
+1. TemporaryFile
+
+Purpose: Store temporary data in a file-like object for your program.
+
+Example usage: intermediate processing, storing results, reading/writing sample data.
+
+Deleted automatically when closed.
+
+import tempfile
+
+with tempfile.TemporaryFile(mode='w+t') as tmp:
+    tmp.write("Sample data")
+    tmp.seek(0)
+    print(tmp.read())
+# File is gone automatically
+
+2. NamedTemporaryFile
+
+Purpose: Temporary file you might need a path to.
+
+Example usage: passing a temporary file to another program or library.
+
+Optionally keep after closing (delete=False).
+
+import tempfile
+
+with tempfile.NamedTemporaryFile(mode='w+t') as tmp:
+    print(f"Temp file path: {tmp.name}")
+    tmp.write("Some sample data")
+    tmp.seek(0)
+    print(tmp.read())
+# File auto-deleted at the end
+
+3. TemporaryDirectory
+
+Purpose: Store temporary files in a folder, useful if you have multiple files.
+
+Example usage: temporary project workspace, testing data, sample generation.
+
+import tempfile
+import os
+
+with tempfile.TemporaryDirectory() as tmpdir:
+    print(f"Temp dir path: {tmpdir}")
+    filepath = os.path.join(tmpdir, "sample.txt")
+    with open(filepath, "w") as f:
+        f.write("Hello world!")
+    print(os.listdir(tmpdir))  # ['sample.txt']
+# Directory and files auto-deleted
+
+Temp Object	Purpose / Use Case	How to get name/path	Auto-deleted?	Example
+TemporaryFile	Quick temporary file, mostly in-memory or for temporary processing	Has no permanent name in filesystem. Access via the file object itself.	✅ Yes, when closed	python\nwith tempfile.TemporaryFile(mode='w+t') as tmp:\n tmp.write("Sample")\n tmp.seek(0)\n print(tmp.read())\n
+NamedTemporaryFile	Temporary file that may need a path (e.g., pass to other programs)	tmp.name → path of the file	✅ Default delete=True; set delete=False to keep	python\nwith tempfile.NamedTemporaryFile(mode='w+t') as tmp:\n print(tmp.name)\n tmp.write("Data")\n
+TemporaryDirectory	Temporary folder for multiple files / workspace	tmpdir → path of the directory	✅ Yes, directory and all contents deleted	python\nwith tempfile.TemporaryDirectory() as tmpdir:\n print(tmpdir)\n filepath = os.path.join(tmpdir, "file.txt")\n with open(filepath, "w") as f:\n f.write("Hello")\n
+
+tempfile.gettempdir()
+
+Purpose: Returns the path to the system’s default temporary directory.
+
+Cross-platform: Works on Windows, Linux, macOS.
+
+Typical locations:
+
+Windows → C:\Users\<User>\AppData\Local\Temp
+
+Linux/macOS → /tmp
+
+tempfile.gettempprefix()
+Returns the default prefix for temp files (usually 'tmp')
+
+----
+
+base64
+
+The base64 module allows you to encode binary data into text and decode it back.
+
+Commonly used to:
+
+Send binary data over text-only protocols (like email, JSON, or XML)
+
+Store images or files in text formats
+
+Encode data safely for URLs
+
+Base64 is not encryption — it’s just an encoding.
+
+How Base64 Works
+
+Base64 converts binary data into ASCII characters:
+
+Uses A-Z, a-z, 0-9, +, /
+
+Adds = for padding if needed
+
+Every 3 bytes of data → 4 Base64 characters
+
+
+Main Functions
+Function	Description
+base64.b64encode(data)	Encode bytes → Base64 bytes
+base64.b64decode(data)	Decode Base64 bytes → original bytes
+base64.urlsafe_b64encode(data)	Encode for URLs (uses - and _ instead of + and /)
+base64.urlsafe_b64decode(data)	Decode URL-safe Base64
+
+Encoding	Description	Encode Function	Decode Function	Notes / Typical Use
+Base64	Standard Base64	b64encode	b64decode	Default Base64, padding with =
+URL-safe Base64	Base64 safe for URLs / filenames	urlsafe_b64encode	urlsafe_b64decode	Replaces + → -, / → _
+Base32	Encodes 5 bits per character	b32encode	b32decode	Alphabet A-Z2-7, padding =; often used for OTP / secret keys
+Base16 (Hexadecimal)	Hex encoding	b16encode	b16decode	Outputs only uppercase hex 0-9A-F; commonly used for hashes
+Base85 / Ascii85	High-density encoding, 4 bytes → 5 chars	a85encode	a85decode	Less common, compact text representation
+Base85 / Z85	ZeroMQ / Z85 variant	b85encode	b85decode	Used in some binary protocols, more compact than Base64
+All functions work with bytes, so you usually .encode() strings before encoding and .decode() after decoding.
+
+Base64 (and other encodings) can be represented as strings if you decode the bytes using a character encoding like UTF-8.
+
+1. Bytes vs String
+import base64
+
+data = b"Hello World"       # bytes
+encoded_bytes = base64.b64encode(data)
+print(encoded_bytes)        # b'SGVsbG8gV29ybGQ='
+
+# Convert bytes → string for readability
+encoded_str = encoded_bytes.decode('utf-8')
+print(encoded_str)          # SGVsbG8gV29ybGQ=
+
+
+✅ Now you have a string version of Base64, which is useful for:
+
+JSON
+
+URLs
+
+Storing in text files
+
+Printing / debugging
+
+
+-----
+
+csv
+ython csv Module
+
+The csv module is used to read and write CSV files (Comma-Separated Values).
+
+Works on Windows, Linux, macOS (cross-platform).
+
+Can handle different delimiters, quoting, and line terminators.
+
+Can read/write lists or dictionaries.
+
+CSV Basics
+
+CSV = Comma-Separated Values (but can use other delimiters like ; or \t).
+
+Example CSV file:
+
+Name,Age,Country
+Alice,30,USA
+Bob,25,UK
+Charlie,28,India
+
+Using csv.reader
+import csv
+
+with open("sample.csv", newline='') as csvfile:
+    reader = csv.reader(csvfile)
+    for row in reader:
+        print(row)
+
+b. Using csv.DictReader
+import csv
+
+with open("sample.csv", newline='') as csvfile:
+    reader = csv.DictReader(csvfile)
+    for row in reader:
+        print(row)
+
+
+Output:
+
+{'Name': 'Alice', 'Age': '30', 'Country': 'USA'}
+{'Name': 'Bob', 'Age': '25', 'Country': 'UK'}
+{'Name': 'Charlie', 'Age': '28', 'Country': 'India'}
+
+
+DictReader gives each row as a dictionary with column headers as keys.
+
+
+riting CSV Files
+a. Using csv.writer
+import csv
+
+data = [
+    ["Name", "Age", "Country"],
+    ["Alice", 30, "USA"],
+    ["Bob", 25, "UK"],
+]
+
+with open("output.csv", "w", newline='') as csvfile:
+    writer = csv.writer(csvfile)
+    writer.writerows(data)
+
+
+writerows() writes multiple rows at once.
+Use writer.writerow() for one row at a time.
+
+Using csv.DictWriter
+import csv
+
+data = [
+    {"Name": "Alice", "Age": 30, "Country": "USA"},
+    {"Name": "Bob", "Age": 25, "Country": "UK"},
+]
+
+with open("output_dict.csv", "w", newline='') as csvfile:
+    fieldnames = ["Name", "Age", "Country"]
+    writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+
+    writer.writeheader()  # write column headers
+    writer.writerows(data)
+
+
+DictWriter is very convenient when your data is in dictionary form.
+
+Custom Delimiters
+import csv
+
+with open("data.tsv", newline='') as csvfile:
+    reader = csv.reader(csvfile, delimiter='\t')
+    for row in reader:
+        print(row)
+5. Quoting Options
+Option	Meaning
+csv.QUOTE_MINIMAL	Only quote fields with special characters (default)
+csv.QUOTE_ALL	Quote all fields
+csv.QUOTE_NONNUMERIC	Quote all non-numeric fields
+csv.QUOTE_NONE	Do not quote fields (may require escapechar)
+
+Example:
+
+import csv
+
+data = [["Name", "Note"], ["Alice", "He said, 'Hi!'"]]
+
+with open("quotes.csv", "w", newline='') as csvfile:
+    writer = csv.writer(csvfile, quoting=csv.QUOTE_ALL)
+    writer.writerows(data)
+What is Quoting in CSV?
+
+Quoting determines how a field in CSV is wrapped in quotes (" ").
+
+Needed when fields contain special characters, such as:
+
+The delimiter itself (, or ;)
+
+Double quotes (")
+
+Newlines (\n)
+
+Without quoting, CSV parsers might misinterpret fields.
+
+1. Quoting Constants in csv Module
+Constant	Meaning
+csv.QUOTE_MINIMAL	Default. Only quote fields with special characters (delimiter, quotechar, newline)
+csv.QUOTE_ALL	Quote all fields, even if not necessary
+csv.QUOTE_NONNUMERIC	Quote all non-numeric fields, numeric fields left unquoted
+csv.QUOTE_NONE	Do not quote fields. Must use escapechar to escape special characters
+2. Examples
+a. QUOTE_MINIMAL (default)
+import csv
+
+data = [
+    ["Name", "Note"],
+    ["Alice", "Hello, World!"],  # contains comma
+    ["Bob", "Hi"]
+]
+
+with open("minimal.csv", "w", newline='') as f:
+    writer = csv.writer(f, quoting=csv.QUOTE_MINIMAL)
+    writer.writerows(data)
+
+
+File content:
+
+Name,Note
+Alice,"Hello, World!"
+Bob,Hi
+
+
+✅ Only the field with a comma is quoted.
+
+b. QUOTE_ALL
+with open("all.csv", "w", newline='') as f:
+    writer = csv.writer(f, quoting=csv.QUOTE_ALL)
+    writer.writerows(data)
+
+
+File content:
+
+"Name","Note"
+"Alice","Hello, World!"
+"Bob","Hi"
+
+
+✅ Every field is wrapped in quotes.
+
+c. QUOTE_NONNUMERIC
+data = [
+    ["Name", "Age"],
+    ["Alice", 30],
+    ["Bob", 25]
+]
+
+with open("non_numeric.csv", "w", newline='') as f:
+    writer = csv.writer(f, quoting=csv.QUOTE_NONNUMERIC)
+    writer.writerows(data)
+
+
+File content:
+
+"Name",Age
+"Alice",30
+"Bob",25
+
+
+✅ Non-numeric fields are quoted, numbers are not.
+
+d. QUOTE_NONE (with escapechar)
+data = [
+    ["Name", "Note"],
+    ["Alice", "Hello, World!"]
+]
+
+with open("none.csv", "w", newline='') as f:
+    writer = csv.writer(f, quoting=csv.QUOTE_NONE, escapechar='\\')
+    writer.writerows(data)
+
+
+File content:
+
+Name,Note
+Alice,Hello\, World!
+
+
+✅ No quotes. Special characters (comma) are escaped using escapechar.
+
+3. Summary Table
+Quoting	Behavior	When to Use
+QUOTE_MINIMAL	Only quote fields with special characters	Default, most common
+QUOTE_ALL	Quote all fields	Ensure all fields are wrapped in quotes
+QUOTE_NONNUMERIC	Quote only non-numeric fields	Data has numeric fields, need consistent quoting for others
+QUOTE_NONE	No quoting; escape special chars	Rare cases, manually handle special characters
+
+In csv.DictReader, the first row of the CSV file is automatically used as the field names (keys) for the dictionaries — unless you explicitly provide your own fieldnames.
+Notice: if you provide fieldnames, the first row of the CSV is treated as normal data, not headers.
+
+Quick Summary
+DictReader	Behavior
+Default (fieldnames=None)	Uses first row as keys
+fieldnames=[...] provided	Uses your keys, first row becomes normal data
+You can use quoting in CSV writers, both in csv.writer and csv.DictWriter.
+
+Quoting in CSV Writers
+
+The quoting parameter tells Python how to wrap fields in quotes (" ") when writing CSV.
+
+Works exactly like with reading — you just specify it when creating the writer object.
+
+Common options:
+
+csv.QUOTE_MINIMAL → default, only quote fields with special characters
+
+csv.QUOTE_ALL → quote all fields
+
+csv.QUOTE_NONNUMERIC → quote only non-numeric fields
+
+csv.QUOTE_NONE → no quoting, use escapechar if needed
+
+---
+
+
+json
+
+📦 json module (Python Standard Library)
+
+The json module is used to serialize (convert to JSON) and deserialize (read JSON back) Python data.
+
+JSON = JavaScript Object Notation
+Human-readable + language-independent data format.
+
+1️⃣ JSON ↔ Python type mapping
+JSON type	Python type
+object	dict
+array	list
+string	str
+number (int)	int
+number (float)	float
+true / false	True / False
+null	None
+2️⃣ Writing JSON (serialize)
+json.dump() → write to file
+import json
+
+data = {
+    "name": "Alice",
+    "age": 30,
+    "active": True,
+    "skills": ["python", "linux"]
+}
+
+with open("data.json", "w") as f:
+    json.dump(data, f)
+
+json.dumps() → write to string
+json_text = json.dumps(data)
+print(json_text)
+
+3️⃣ Reading JSON (deserialize)
+json.load() → read from file
+import json
+
+with open("data.json") as f:
+    data = json.load(f)
+
+print(data)
+print(type(data))  # dict
+
+json.loads() → read from string
+json_text = '{"x": 10, "y": 20}'
+obj = json.loads(json_text)
+
+4️⃣ Formatting options (VERY useful)
+Pretty-printed JSON
+json.dump(data, f, indent=4)
+
+Sorted keys
+json.dump(data, f, indent=2, sort_keys=True)
+
+Compact (no spaces)
+json.dumps(data, separators=(",", ":"))
+
+5️⃣ Encoding non-ASCII (important)
+json.dump(data, f, ensure_ascii=False)
+
+
+✔️ Keeps Unicode readable
+❌ Default escapes Unicode
+
+6️⃣ Custom object support (advanced)
+Problem:
+json.dumps(datetime.now())  # ❌ error
+
+Solution: default=
+import json
+from datetime import datetime
+
+json.dumps(
+    {"time": datetime.now()},
+    default=str
+)
+
+7️⃣ Common mistakes
+
+❌ Writing JSON manually
+
+f.write("{name: Alice}")  # invalid JSON
+
+
+❌ Expecting bytes
+JSON is TEXT, not bytes
+
+✔️ JSON works with str, not bytes
+
+8️⃣ JSON vs CSV vs Pickle
+Format	Human readable	Safe	Python-only
+JSON	✅	✅	❌
+CSV	✅	✅	❌
+Pickle	❌	❌	✅
+
+9️⃣ When to use JSON
+
+✔ Config files
+✔ API data
+✔ App settings
+✔ Structured data storage
+
+❌ Large binary data
+❌ Extremely fast serialization needs
+
+10️⃣ Quick mental model 🧠
+Python object
+   ↓ json.dumps / dump
+JSON text
+   ↑ json.loads / load
+Python object
+
+if custom object serialization method  in default
+ then in load /lodas use  object_hook
+
+----
+
+hashlib
+ashlib — Cryptographic Hashes (Python stdlib)
+
+hashlib is used to create fixed-size hashes from data.
+A hash is:
+
+Deterministic (same input → same output)
+
+One-way (cannot get original data back)
+
+Fixed length (no matter input size)
+
+What hashlib is used for
+
+✔ Password hashing (with salt)
+✔ File integrity checks
+✔ Data fingerprints
+✔ Caches / deduplication
+✔ Security checksums
+
+❌ Encryption (hash ≠ encryption)
+
+
+Algorithm	Secure?	Output size
+md5	❌ broken	128-bit
+sha1	❌ broken	160-bit
+sha224	⚠️ weak	224-bit
+sha256	✅ good	256-bit
+sha384	✅	384-bit
+sha512	✅	512-bit
+blake2b	✅ fast & secure	up to 512
+blake2s	✅	up to 256
+
+
+Check availability:
+
+import hashlib
+hashlib.algorithms_available
+
+Basic hashing (bytes only!)
+
+⚠️ Hashing always works on bytes
+
+import hashlib
+
+data = b"hello"
+
+h = hashlib.sha256(data)
+print(h.hexdigest())
+
+4️⃣ Hashing strings (correct way)
+text = "hello"
+
+h = hashlib.sha256(text.encode("utf-8"))
+print(h.hexdigest())
+
+
+❌ Wrong:
+
+hashlib.sha256("hello")  # TypeError
+
+5️⃣ Incremental hashing (streaming)
+
+Used for large files
+
+import hashlib
+
+h = hashlib.sha256()
+
+with open("bigfile.bin", "rb") as f:
+    for chunk in iter(lambda: f.read(8192), b""):
+        h.update(chunk)
+
+print(h.hexdigest())
+
+
+✔ No need to load whole file into memory
+
+
+
+6️⃣ Hash object methods
+Method	Purpose
+update(bytes)	add data
+digest()	raw bytes hash
+hexdigest()	hex string
+copy()	clone hash state
+7️⃣ digest() vs hexdigest()
+h.digest()     # b'\x9f\x86...'
+h.hexdigest()  # '9f86d081...'
+
+
+digest() → binary
+
+hexdigest() → human-readable
+
+8️⃣ Salting (VERY important)
+
+❌ Bad (no salt):
+
+hashlib.sha256(password.encode()).hexdigest()
+
+
+✔ Better (salt):
+
+import os, hashlib
+
+salt = os.urandom(16)
+h = hashlib.sha256(salt + password.encode()).hexdigest()
+
+
+✔ Even better: use hashlib.pbkdf2_hmac
+
+9️⃣ Password hashing (correct way)
+import hashlib, os
+
+salt = os.urandom(16)
+key = hashlib.pbkdf2_hmac(
+    "sha256",
+    password.encode(),
+    salt,
+    100_000
+)
+
+
+✔ Slow → resists brute force
+✔ Secure
+1️⃣ digest() vs hexdigest()
+digest()
+h.digest()
+
+
+Returns raw bytes
+
+Fixed length (depends on algorithm)
+
+Used when you need binary form
+
+Example:
+
+b'\x9f\x86\xd0\x81\x88...'
+
+hexdigest()
+h.hexdigest()
+
+
+Returns hexadecimal string
+
+Human-readable
+
+Easy to store / print
+
+Example:
+
+'9f86d081884c7d659a2feaa0c55ad015...'
+
+When to use which
+Use case	Use
+Store in DB / logs	hexdigest()
+Compare hashes	hexdigest()
+Binary protocol	digest()
+Feed into another hash	digest()
+2️⃣ copy() — what is it for?
+h2 = h.copy()
+
+
+Creates a snapshot of the current hash state.
+
+Example
+import hashlib
+
+h = hashlib.sha256()
+h.update(b"hello")
+
+h2 = h.copy()   # snapshot here
+
+h.update(b" world")
+
+print(h.hexdigest())   # hash of "hello world"
+print(h2.hexdigest())  # hash of "hello"
+
+
+✔ Useful for branching computations
+✔ Avoid recomputing from scratch
+3️⃣ Other important hash object methods
+Method	Purpose
+update(bytes)	Add more data
+digest()	Raw bytes hash
+hexdigest()	Hex string
+copy()	Clone state
+name	Algorithm name
+block_size	Internal block size
+digest_size	Output size
+
+5️⃣ Should you use hmac instead?
+Short answer:
+
+❌ No, not for password hashing
+
+hmac vs pbkdf2_hmac
+Feature	hmac	pbkdf2_hmac
+Purpose	Message authentication	Password hashing
+Uses secret key	✅	✅ (password)
+Iterations	❌	✅
+Slow by design	❌	✅
+Good for passwords	❌	✅
+❌ hashlib does NOT accept strings directly
+✅ hashlib accepts bytes-like objects only
+
+What is 100_000 in pbkdf2_hmac?
+hashlib.pbkdf2_hmac(
+    "sha256",
+    password.encode(),
+    salt,
+    100_000
+)
+
+👉 100_000 = iteration count (also called rounds)
+What iterations mean
+
+PBKDF2 works like this:
+
+password + salt
+   ↓
+HMAC(hash)
+   ↓ repeated 100,000 times
+derived key
+
+
+So:
+
+The hash function runs 100,000 times
+
+On purpose: slow = secure
+
+Why make it slow?
+
+Attackers try millions/billions of passwords.
+
+If hashing is:
+
+Fast → attacker wins
+
+Slow → attacker loses
+
+Iterations make brute-force attacks expensive.
+
+Effect of iteration count
+Iterations	Security	Speed
+1,000	❌ too low	very fast
+10,000	⚠️ weak	fast
+100,000	✅ good	acceptable
+300,000+	✅ better	slower
+
+
+----
+secrets
+🔐 secrets — Secure Randomness (Python stdlib)
+
+The secrets module is used to generate cryptographically secure random values.
+
+👉 It is designed for security-sensitive things, not simulations.
+
+1️⃣ Why secrets exists
+
+Python already has random, but:
+
+random ❌ is predictable
+
+secrets ✅ is cryptographically secure
+
+Use secrets for:
+✔ passwords
+✔ tokens
+✔ API keys
+✔ session IDs
+✔ reset links
+
+2️⃣ Core functions
+🔹 secrets.token_bytes(n)
+
+Returns secure random bytes
+
+import secrets
+
+secrets.token_bytes(16)
+
+
+Example output:
+
+b'\x8a\xd4\x91...'
+
+🔹 secrets.token_hex(n)
+
+Returns hex string (2× length)
+
+secrets.token_hex(16)
+
+
+Example:
+
+'4f9c2e8d6a1a7c3b9f2d4e5a8c1b0f33'
+
+🔹 secrets.token_urlsafe(n)
+
+Returns URL-safe string
+
+secrets.token_urlsafe(16)
+
+
+✔ Safe for URLs, cookies, headers
+
+3️⃣ Choosing random items securely
+🔹 secrets.choice()
+import secrets
+
+secrets.choice("abcdef123456")
+
+
+✔ Secure replacement for random.choice
+
+4️⃣ Comparing secrets safely
+🔹 secrets.compare_digest()
+
+Prevents timing attacks
+
+import secrets
+
+secrets.compare_digest(a, b)
+
+
+✔ Constant-time comparison
+✔ Use for passwords, tokens, signatures
+
+5️⃣ secrets vs os.urandom
+Feature	secrets	os.urandom
+Secure	✅	✅
+High-level	✅	❌
+Easy API	✅	❌
+Bytes only	❌	✅
+
+Internally, secrets uses os.urandom.
+
+6️⃣ secrets vs random
+Feature	secrets	random
+Cryptographically secure	✅	❌
+Predictable	❌	✅
+Games/simulations	❌	✅
+Passwords/tokens	✅	❌
+
+7️⃣ Typical real-world usage
+Password reset token
+token = secrets.token_urlsafe(32)
+
+API key generation
+api_key = secrets.token_hex(32)
+
+Session ID
+session_id = secrets.token_bytes(32)
+
+8️⃣ Common mistakes ❌
+
+❌ Using random for passwords
+❌ Comparing secrets with ==
+❌ Using short token lengths
+
+9️⃣ Mental model 🧠
+random   → games, simulations
+secrets  → security, authentication
+
+10️⃣ One-line rule
+
+If it must be unpredictable → use secrets.
+secrets.compare_digest(a, b) returns a Boolean.
+
+
+-----
+
+
+hmac
+hmac — Keyed Message Authentication (Python stdlib)
+
+HMAC = Hash-based Message Authentication Code
+
+It answers one question:
+
+“Was this message created by someone who knows the secret key, and was it not modified?”
+
+1️⃣ What HMAC is (concept)
+message + secret_key
+        ↓
+     hash function
+        ↓
+     MAC (signature)
+
+
+Uses a secret key
+
+Uses a hash function (SHA-256, etc.)
+
+Output is a fixed-size tag
+
+Cannot be forged without the key
+
+
+What HMAC is used for
+
+✔ API request signing
+✔ Webhooks verification
+✔ Message integrity
+✔ Authentication tokens
+
+❌ Password storage (use pbkdf2_hmac)
+❌ Encryption
+
+3️⃣ Basic usage
+import hmac
+import hashlib
+
+key = b"super-secret-key"
+message = b"important message"
+
+mac = hmac.new(key, message, hashlib.sha256)
+signature = mac.hexdigest()
+
+print(signature)
+
+4️⃣ Verifying an HMAC (IMPORTANT)
+received_signature = signature_from_request
+
+expected = hmac.new(key, message, hashlib.sha256).digest()
+
+if hmac.compare_digest(received_signature, expected):
+    print("Valid message")
+else:
+    print("Tampered or invalid")
+
+
+✔ Uses constant-time comparison
+✔ Prevents timing attacks
+
+5️⃣ hmac works with BYTES only
+
+Same rule as hashlib:
+
+hmac.new(key, message, hashlib.sha256)  # bytes only
+
+
+Strings must be encoded.
+
+6️⃣ hmac vs hashlib
+Feature	hashlib	hmac
+Secret key	❌	✅
+Message authentication	❌	✅
+Integrity check	❌	✅
+Password hashing	❌	❌
+7️⃣ hmac vs pbkdf2_hmac
+Feature	hmac	pbkdf2_hmac
+Purpose	Message authentication	Password hashing
+Iterations	❌	✅
+Slow by design	❌	✅
+User passwords	❌	✅
+8️⃣ Why not just hash(key + message)?
+
+❌ Vulnerable to length-extension attacks
+❌ Not cryptographically safe
+
+✔ HMAC fixes this using a proven construction
+
+9️⃣ Real-world example (API signing)
+def sign_request(secret, payload):
+    return hmac.new(
+        secret.encode(),
+        payload.encode(),
+        hashlib.sha256
+    ).hexdigest()
+
+
+Server verifies with the same secret.
+
+🔟 Important attributes & methods
+Method	Purpose
+hmac.new()	create HMAC
+.update()	add data
+.digest()	raw bytes
+.hexdigest()	hex string
+.copy()	clone state
+hmac.compare_digest()	secure compare
+Mental model 🧠
+hashlib → fingerprint
+hmac    → fingerprint + secret
+
+One-line rule
+
+Use hmac to prove authenticity, not to store passwords.
+Why BLAKE2 is special
+
+BLAKE2 already supports keyed hashing:
+
+hashlib.blake2b(data, key=key)
+
+
+So:
+
+You don’t need hmac with BLAKE2
+
+It’s faster and secure
+
+Recommended choices
+Best default
+hmac.new(key, msg, hashlib.sha256)
+
+Larger security margin
+hmac.new(key, msg, hashlib.sha512)
+
+Fast alternative (no HMAC)
+hashlib.blake2b(msg, key=key)
+
+What NOT to do ❌
+hmac.new(key, msg, hashlib.md5)   # ❌ insecure
+hmac.new(key, msg, hashlib.sha1)  # ❌ deprecated
+
+One-line takeaway 🧠
+
+Yes, HMAC supports many hash algorithms, but SHA-256 is the safe default.
+ake2 is a fast cryptographic hash that supports keyed hashing natively, without needing HMAC.
+
+blake2b → 512-bit output (big messages)
+
+blake2s → 256-bit output (smaller / faster)
+
+1️⃣ Keyed hashing idea
+
+Normally:
+
+HMAC:
+hash(key + message) → secure MAC
+
+
+BLAKE2 allows:
+
+blake2b(message, key=secret) → keyed MAC
+
+
+✅ You don’t need HMAC, it’s already built in.
+
+2️⃣ Example: keyed hash with BLAKE2b
+import hashlib
+
+key = b"supersecret"
+message = b"important message"
+
+h = hashlib.blake2b(message, key=key)
+print(h.hexdigest())
+
+
+key must be bytes
+
+Max key length: 64 bytes for blake2b, 32 bytes for blake2s
+
+Output length can be adjusted (digest_size=32)
+
+3️⃣ Why BLAKE2 keyed hash is useful
+Feature	HMAC	BLAKE2 keyed
+Requires separate HMAC construction	✅	❌
+Secure against length-extension attacks	✅	✅
+Faster	⚠️	✅ optimized
+Output size adjustable	✅	✅
+Supports key directly	❌	✅
+4️⃣ Custom digest size
+h = hashlib.blake2b(message, key=key, digest_size=32)
+print(h.hexdigest())  # 64 hex characters instead of 128
+
+5️⃣ Verifying message integrity
+
+Just recompute the keyed hash:
+
+received_hash = h.hexdigest()
+
+# Recompute
+h2 = hashlib.blake2b(message, key=key)
+assert h2.hexdigest() == received_hash
+
+
+✅ Constant-time comparison recommended with secrets.compare_digest:
+
+import secrets
+secrets.compare_digest(h2.digest(), h.digest())
+
+6️⃣ When to use BLAKE2 keyed hash
+
+✔ API message authentication
+✔ Webhooks
+✔ Tokens / session MACs
+✔ Faster HMAC replacement
+
+
+----
+
+ipaddress
+What ipaddress is used for
+
+✔ Validate IP addresses
+✔ Work with IPv4 / IPv6
+✔ Calculate subnets, ranges, masks
+✔ Check if an IP belongs to a network
+✔ CIDR math (very important)
+
+❌ No sockets
+❌ No packets
+❌ No connections
+
+Main classes
+Class	Represents
+IPv4Address	Single IPv4 address
+IPv6Address	Single IPv6 address
+IPv4Network	IPv4 network (CIDR)
+IPv6Network	IPv6 network (CIDR)
+IPv4Interface	IP + mask
+IPv6Interface	IP + mask
+
+
+Basic examples
+Create an IP address
+import ipaddress
+
+ip = ipaddress.ip_address("192.168.1.10")
+print(ip)
+print(type(ip))
+
+
+✔ Auto-detects IPv4 vs IPv6
+
+Invalid address:
+
+ipaddress.ip_address("999.1.1.1")  # ValueError
+
+IPv4 vs IPv6 explicitly
+ipaddress.IPv4Address("8.8.8.8")
+ipaddress.IPv6Address("2001:db8::1")
+
+Network (CIDR)
+net = ipaddress.ip_network("192.168.1.0/24")
+
+net.network_address   # 192.168.1.0
+net.broadcast_address # 192.168.1.255
+net.netmask           # 255.255.255.0
+net.num_addresses     # 256
+
+Iterate usable hosts
+for host in net.hosts():
+    print(host)
+
+
+(Excludes network & broadcast for IPv4)
+
+Membership test (very common)
+ip = ipaddress.ip_address("192.168.1.42")
+net = ipaddress.ip_network("192.168.1.0/24")
+
+ip in net   # True
+
+Subnetting & supernetting
+Split network
+list(net.subnets(new_prefix=26))
+
+Merge networks
+net.supernet(new_prefix=23)
+
+Interface (IP + mask)
+iface = ipaddress.ip_interface("192.168.1.10/24")
+
+iface.ip       # 192.168.1.10
+iface.network  # 192.168.1.0/24
+
+Comparison & sorting
+ipaddress.ip_address("192.168.1.1") < ipaddress.ip_address("192.168.1.10")
+
+
+✔ Numeric comparison, not string
+
+Common practical uses
+Validate user input
+def valid_ip(s):
+    try:
+        ipaddress.ip_address(s)
+        return True
+    except ValueError:
+        return False
+
+Private / public IP check
+ip = ipaddress.ip_address("192.168.1.1")
+
+ip.is_private      # True
+ip.is_global       # False
+ip.is_loopback     # False
+ip.is_multicast    # False
+
+IPv6-specific helpers
+ip.is_link_local
+ip.is_reserved
+ip.exploded   # full form
+ip.compressed # short form
+Property	Meaning
+is_private	RFC1918
+is_loopback	127.0.0.0/8
+is_multicast	224.0.0.0/4
+is_link_local	169.254.x.x
+is_reserved	Reserved by IANA
+is_global	Public internet
+5️⃣ Interface objects (host view)
+iface = ipaddress.ip_interface("192.168.1.10/24")
+
+
+This is how operating systems think.
+
+iface.ip        # 192.168.1.10
+iface.network   # 192.168.1.0/24
+iface.netmask   # 255.255.255.0
+
+
+✔ Use this when parsing:
+
+ip addr
+
+ifconfig
+
+config files
+
+Important subtle point (very useful)
+supernet() does not take multiple networks
+
+It works from one network outward.
+
+If you have multiple networks and want to merge them, you use:
+
+ipaddress.collapse_addresses([...])
+
+
+Example:
+
+nets = [
+    ipaddress.ip_network("192.168.0.0/24"),
+    ipaddress.ip_network("192.168.1.0/24"),
+]
+
+list(ipaddress.collapse_addresses(nets))
+
+
+Output:
+
+[IPv4Network('192.168.0.0/23')]
+
+
+✔ This is true merging
+-----
+socket
+What socket really is
+
+👉 A socket is an endpoint for communication
+👉 It lets two programs talk over a network
+
+Unlike ipaddress:
+
+ipaddress = thinking about addresses
+
+socket = actually sending/receiving data
+
+What socket does (big picture)
+
+✔ Create network connections
+✔ Send bytes
+✔ Receive bytes
+✔ Use TCP / UDP
+✔ Talk over IP + ports
+
+❌ No HTTP logic
+❌ No JSON handling
+❌ No encryption (by default)
+
+
+
+How socket fits with IP concepts you know
+
+You already know:
+
+IP address
+
+Network
+
+Membership
+
+Socket adds:
+
+Port
+
+Protocol
+
+Connection
+
+(IP address, Port, Protocol) = Socket
+
+
+Example:
+
+("8.8.8.8", 53, UDP)
+
+Core socket types (VERY important)
+1️⃣ Address family (AF)
+Constant	Meaning
+AF_INET	IPv4
+AF_INET6	IPv6
+AF_UNIX	Local IPC
+
+You’ll mostly use:
+
+socket.AF_INET
+
+2️⃣ Socket type
+Type	Meaning
+SOCK_STREAM	TCP
+SOCK_DGRAM	UDP
+3️⃣ Protocol (usually 0)
+socket.socket(AF_INET, SOCK_STREAM)
+
+
+Protocol 0 = OS chooses correct one.
+
+Simplest TCP example (client)
+import socket
+
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+s.connect(("example.com", 80))
+
+s.sendall(b"GET / HTTP/1.1\r\nHost: example.com\r\n\r\n")
+
+data = s.recv(4096)
+print(data)
+
+s.close()
+
+What happened step-by-step
+
+1️⃣ Created TCP socket
+2️⃣ Connected to server
+3️⃣ Sent bytes
+4️⃣ Received bytes
+5️⃣ Closed connection
+
+✔ Everything is bytes
+
+TCP Server example (very important)
+import socket
+
+server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server.bind(("0.0.0.0", 5000))
+server.listen()
+
+conn, addr = server.accept()
+print("Client:", addr)
+
+data = conn.recv(1024)
+conn.sendall(b"Hello client")
+
+conn.close()
+server.close()
+
+Important concepts here
+Function	Meaning
+bind()	Attach IP + port
+listen()	Start waiting
+accept()	Accept connection
+recv()	Receive bytes
+sendall()	Send bytes
+UDP example (connectionless)
+import socket
+
+s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+s.sendto(b"hello", ("127.0.0.1", 9999))
+
+data, addr = s.recvfrom(1024)
+
+
+✔ No connect
+✔ No accept
+✔ No guarantee of delivery
+
+Socket lifecycle (memorize this)
+TCP Server
+socket()
+↓
+bind()
+↓
+listen()
+↓
+accept()
+↓
+recv()/send()
+↓
+close()
+
+TCP Client
+socket()
+↓
+connect()
+↓
+send()/recv()
+↓
+close()
+
+How ipaddress + socket work together
+import ipaddress, socket
+
+ip = ipaddress.ip_address("192.168.1.10")
+
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+s.connect((str(ip), 80))
+
+
+✔ ipaddress → validation
+✔ socket → communication
+
+Common beginner mistakes 🚫
+
+❌ Sending strings instead of bytes
+❌ Forgetting .close()
+❌ Blocking recv() forever
+❌ Mixing UDP and TCP logic
+❌ Thinking socket = HTTP
+
+When YOU will use socket
+
+You’ll use it for:
+
+Learning networking internals
+
+Writing servers
+
+Custom protocols
+
+Debugging tools
+
+Understanding how HTTP works under the hood
+
+
+
+1️⃣ What a socket REALLY is (no jargon)
+
+A socket is:
+
+a software endpoint that allows two programs to exchange bytes over a network.
+
+Key truth (remember forever):
+
+Socket = IP address + Port + Protocol
+
+
+Examples:
+
+(192.168.1.10, 22, TCP)   → SSH
+(8.8.8.8, 53, UDP)       → DNS
+
+2️⃣ Why sockets exist
+
+Operating systems provide:
+
+Network cards
+
+TCP/IP stack
+
+Routing
+
+Buffers
+
+But programs need an API to use them.
+That API is socket.
+
+So socket is a thin wrapper over OS networking.
+
+3️⃣ What socket DOES and DOES NOT do
+✅ Does
+
+✔ Open network connections
+✔ Send bytes
+✔ Receive bytes
+✔ TCP / UDP
+✔ IPv4 / IPv6
+✔ DNS resolution (basic)
+
+❌ Does NOT
+
+❌ HTTP logic
+❌ Encryption
+❌ Serialization
+❌ Retry logic
+
+Everything higher-level builds on top of sockets.
+
+4️⃣ Core socket building blocks (VERY IMPORTANT)
+(A) Address Family — where
+socket.AF_INET     # IPv4
+socket.AF_INET6    # IPv6
+socket.AF_UNIX     # Local machine IPC
+
+
+99% of the time:
+
+AF_INET
+
+(B) Socket Type — how
+socket.SOCK_STREAM  # TCP (reliable, ordered)
+socket.SOCK_DGRAM   # UDP (fast, no guarantee)
+
+(C) Protocol — usually ignored
+0  # OS selects protocol automatically
+
+Creating a socket (full form)
+import socket
+
+s = socket.socket(
+    socket.AF_INET,
+    socket.SOCK_STREAM,
+    0
+)
+
+5️⃣ TCP vs UDP (clear difference)
+TCP (SOCK_STREAM)
+
+✔ Connection-based
+✔ Reliable
+✔ Ordered
+✔ Slower
+
+Used by:
+
+HTTP
+
+HTTPS
+
+SSH
+
+FTP
+
+UDP (SOCK_DGRAM)
+
+✔ No connection
+✔ Fast
+✔ Unreliable
+✔ No order
+
+Used by:
+
+DNS
+
+Streaming
+
+Games
+
+VoIP
+
+6️⃣ TCP Client — step by step
+import socket
+
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+s.connect(("example.com", 80))
+
+s.sendall(b"GET / HTTP/1.1\r\nHost: example.com\r\n\r\n")
+
+data = s.recv(4096)
+
+print(data)
+
+s.close()
+
+What happens internally
+
+DNS lookup
+
+TCP handshake
+
+Data sent
+
+Data received
+
+Connection closed
+
+7️⃣ TCP Server — step by step
+import socket
+
+server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+server.bind(("0.0.0.0", 5000))
+server.listen(5)
+
+conn, addr = server.accept()
+
+print("Client connected:", addr)
+
+data = conn.recv(1024)
+conn.sendall(b"Hello client")
+
+conn.close()
+server.close()
+
+Important meanings
+Method	Meaning
+bind()	Assign IP + port
+listen()	Start accepting
+accept()	New client
+recv()	Read bytes
+sendall()	Write bytes
+8️⃣ Blocking behavior (IMPORTANT)
+
+By default:
+
+recv() blocks
+
+accept() blocks
+
+This means:
+
+program waits until data arrives
+
+To control this:
+
+s.settimeout(5)  # seconds
+
+
+Or:
+
+s.setblocking(False)
+
+9️⃣ UDP example
+import socket
+
+s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+s.sendto(b"hello", ("127.0.0.1", 9999))
+
+data, addr = s.recvfrom(1024)
+
+
+✔ No connect
+✔ No accept
+
+🔟 DNS & hostname resolution (ADVANCED + IMPORTANT)
+Resolve hostname → IP
+socket.gethostbyname("example.com")
+
+
+Output:
+
+93.184.216.34
+
+
+IPv4 only.
+
+Resolve hostname (IPv4 + IPv6)
+socket.getaddrinfo("example.com", 80)
+
+
+Returns:
+
+address family
+
+socket type
+
+protocol
+
+sockaddr
+
+Used internally by:
+
+connect()
+
+bind()
+
+Reverse DNS (IP → name)
+socket.gethostbyaddr("8.8.8.8")
+
+1️⃣1️⃣ Hostname utilities
+socket.gethostname()
+
+
+→ Your machine’s hostname
+
+socket.getfqdn()
+
+
+→ Fully qualified domain name
+
+Get local IP (common trick)
+import socket
+
+s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+s.connect(("8.8.8.8", 80))
+local_ip = s.getsockname()[0]
+s.close()
+
+print(local_ip)
+
+
+✔ No packet sent
+✔ Uses routing table
+
+1️⃣2️⃣ Ports (important concept)
+Port range	Meaning
+0–1023	Well-known (root)
+1024–49151	Registered
+49152–65535	Ephemeral
+
+Client ports are auto-chosen by OS.
+
+1️⃣3️⃣ Socket options (advanced)
+s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
+
+Used for:
+
+Restarting servers quickly
+
+Avoiding “Address already in use”
+
+1️⃣4️⃣ Error handling
+
+Socket errors are OS errors:
+
+try:
+    s.connect(("example.com", 80))
+except socket.error as e:
+    print(e)
+
+1️⃣5️⃣ How socket relates to higher libraries
+Library	Built on
+http.client	socket
+requests	socket
+asyncio	non-blocking socket
+ssl	socket
+
+So understanding socket = understanding everything above.
+
+1️⃣6️⃣ Mental model summary (save this)
+socket = low-level network pipe
+TCP = reliable pipe
+UDP = fast pipe
+Everything = bytes
+
+
+1️⃣ Why sockets are blocking by default
+What “blocking” actually means
+
+When you call:
+
+data = sock.recv(1024)
+
+
+Blocking means:
+
+“Pause the program here until something happens.”
+
+That something can be:
+
+Data arrives
+
+Connection closes
+
+Error occurs
+
+Why OS designers chose this:
+
+Simpler programming model
+
+Matches how networks work (data arrives later)
+
+Avoids busy-waiting (wasting CPU)
+
+Why blocking is necessary
+
+Network I/O is slow and unpredictable:
+
+Packets take time
+
+Network congestion
+
+Remote machine delays
+
+If sockets were non-blocking by default:
+
+Beginners would write infinite loops
+
+CPU usage would explode
+
+So blocking = safe default
+
+2️⃣ Why recv(n) may return LESS than n bytes
+
+This is very important.
+
+Key rule (memorize this)
+
+recv(n) means
+“Give me UP TO n bytes”, not “Give me EXACTLY n bytes”
+
+Why this happens (real reasons)
+1️⃣ TCP is a stream, not a message system
+
+TCP does not preserve message boundaries.
+
+Example:
+
+sock.sendall(b"HELLO_WORLD")
+
+
+Receiver might get:
+
+b"HEL"
+b"LO_"
+b"WORLD"
+
+
+Or:
+
+b"HELLO_WORLD"
+
+
+Both are valid.
+
+2️⃣ Data arrives in packets (segments)
+
+Sender → splits data into packets
+
+Network → delivers packets independently
+
+OS → buffers what has arrived so far
+
+When you call recv():
+
+OS gives whatever is currently available
+
+Not what you expect
+
+3️⃣ Network timing is unpredictable
+
+If:
+
+Only 20 bytes arrived
+
+You asked for 1024
+
+OS says:
+
+“Here are the 20 bytes I have right now.”
+
+3️⃣ Why recv() sometimes returns empty bytes
+data = sock.recv(1024)
+
+
+If:
+
+data == b""
+
+
+It means:
+
+The peer has closed the connection cleanly
+
+This is NOT “no data yet”
+This is EOF
+
+4️⃣ Why reading EXACT size is impossible by default
+
+TCP does not know:
+
+Message length
+
+File size
+
+JSON boundary
+
+It only knows:
+
+byte stream
+
+So this is impossible:
+
+recv_exactly(1024)  # ❌ TCP doesn't promise this
+
+5️⃣ How real programs handle this (VERY IMPORTANT)
+Pattern 1: Read until closed
+chunks = []
+
+while True:
+    data = sock.recv(4096)
+    if not data:
+        break
+    chunks.append(data)
+
+full_data = b"".join(chunks)
+
+
+Used for:
+
+HTTP/1.0
+
+Simple protocols
+
+Pattern 2: Length-prefix protocol (MOST COMMON)
+
+Sender:
+
+length = len(data)
+sock.sendall(length.to_bytes(4, "big"))
+sock.sendall(data)
+
+
+Receiver:
+
+length = int.from_bytes(sock.recv(4), "big")
+
+received = b""
+while len(received) < length:
+    received += sock.recv(length - len(received))
+
+
+✔ Guarantees exact size
+✔ Used everywhere (databases, RPC, games)
+
+Pattern 3: Delimiter-based (\n, \r\n)
+buffer = b""
+
+while b"\n" not in buffer:
+    buffer += sock.recv(1024)
+
+
+Used by:
+
+SMTP
+
+Redis
+
+Text protocols
+
+6️⃣ Blocking vs Non-blocking in THIS context
+Blocking socket
+sock.recv(1024)  # waits until data arrives
+
+
+Pros:
+
+Simple
+
+Predictable
+
+Easy logic
+
+Cons:
+
+Can freeze entire program
+
+Non-blocking socket
+sock.setblocking(False)
+
+
+Now:
+
+recv() may raise BlockingIOError
+
+Means: “no data yet”
+
+Used with:
+
+select
+
+poll
+
+selectors
+
+asyncio
+
+7️⃣ Real mental model (best explanation)
+
+Think of TCP like a pipe with flowing water 🚰
+
+send() → pour water
+
+recv(n) → take up to n ml
+
+If only 20 ml available → you get 20
+
+If pipe is closed → you get nothing
+
+You cannot ask the pipe:
+
+“Give me exactly 1 liter now”
+
+8️⃣ Why this design is GOOD (not a flaw)
+
+✔ Handles slow networks
+✔ Handles huge data
+✔ Handles streaming
+✔ Works for files, video, chat, APIs
+
+Everything else builds protocol rules on top.
+
+9️⃣ Summary (memorize this)
+
+Blocking waits for data → safe default
+
+recv(n) = up to n bytes
+
+TCP is a stream, not messages
+
+Empty bytes = connection closed
+
+Exact size requires protocol design1️⃣ Timeout vs blocking
+
+By default:
+
+sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+sock.connect(("example.com", 80))
+data = sock.recv(1024)  # blocks until some data arrives
+
+
+Program pauses at recv() until:
+
+Data arrives
+
+Connection closes
+
+Error occurs
+
+This is blocking.
+
+Using a timeout
+sock.settimeout(5)  # seconds
+data = sock.recv(1024)
+
+
+If data arrives in 5 seconds → fine
+
+If no data in 5 seconds → raises socket.timeout
+
+Program does not freeze forever
+
+✅ This gives you safe blocking: you get the simplicity of blocking, but you avoid infinite hang.
+
+2️⃣ Why timeout is simpler for learning
+
+No need to manage selectors or loops
+
+You can still use normal blocking patterns
+
+You can catch exceptions if server is slow
+
+Example:
+
+import socket
+
+sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+sock.settimeout(3)  # wait max 3 seconds
+
+try:
+    sock.connect(("example.com", 80))
+    sock.sendall(b"GET / HTTP/1.1\r\nHost: example.com\r\n\r\n")
+    data = sock.recv(4096)
+    print(data)
+except socket.timeout:
+    print("Server took too long!")
+finally:
+    sock.close()
+
+
+Elegant
+
+Easy to understand
+
+Works for learning, scripts, small apps
+
+3️⃣ When timeouts are enough
+
+Simple clients (HTTP, APIs, testing)
+
+Small servers
+
+Learning TCP/UDP
+
+Ping-like tools
+
+4️⃣ When you need non-blocking / selectors
+
+Thousands of clients (game server, chat server, async web server)
+
+Long-lived connections where you don’t want any wait
+
+Otherwise → timeouts are simpler and correct.
+
+✅ Conclusion:
+
+For learning and basic networking, just use blocking + timeout.
+Non-blocking is only necessary when you want high-performance concurrent servers.
+
+Exactly ✅ — your understanding of a TCP client is correct:
+
+socket → connect → send / recv → close
+
+
+Now let’s build a server properly, step by step, so you get a clear mental model.
+
+1️⃣ TCP Server — core steps
+
+A TCP server is passive, unlike a client.
+Steps:
+
+Create socket → tell OS what kind of network
+
+Bind → attach IP + port
+
+Listen → start accepting connections
+
+Accept → get a new socket for each client
+
+Send/recv → communicate with client
+
+Close → client socket when done
+
+2️⃣ Minimal TCP server (blocking, simple)
+import socket
+
+# 1. Create socket
+server_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+# 2. Bind to IP + port
+server_sock.bind(("0.0.0.0", 5000))  # 0.0.0.0 = all interfaces
+
+# 3. Listen for incoming connections
+server_sock.listen(5)  # backlog = max queued clients
+
+print("Server listening on port 5000...")
+
+while True:
+    # 4. Accept connection (blocking)
+    client_sock, client_addr = server_sock.accept()
+    print("Client connected:", client_addr)
+
+    # 5. Communicate
+    data = client_sock.recv(1024)  # wait for client data
+    if data:
+        print("Received:", data)
+        client_sock.sendall(b"Hello client!\n")  # echo / respond
+
+    # 6. Close client socket
+    client_sock.close()
+
+
+Notes:
+
+accept() → blocks until a client connects
+
+recv() → blocks until client sends something
+
+Server keeps running → can handle multiple sequential clients
+
+3️⃣ Multiple clients — simple sequential way
+
+The above handles one client at a time.
+
+To handle multiple clients concurrently, you have options:
+
+(A) Thread per client (easy for beginners)
+import socket
+import threading
+
+def handle_client(client_sock, client_addr):
+    print("Client connected:", client_addr)
+    data = client_sock.recv(1024)
+    if data:
+        client_sock.sendall(b"Hello client!\n")
+    client_sock.close()
+
+server_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server_sock.bind(("0.0.0.0", 5000))
+server_sock.listen(5)
+print("Server listening...")
+
+while True:
+    client_sock, client_addr = server_sock.accept()
+    t = threading.Thread(target=handle_client, args=(client_sock, client_addr))
+    t.start()
+
+
+Each client is handled in its own thread
+
+Simple, easy to understand
+
+OK for dozens of clients, but not thousands
+
+(B) Non-blocking + selectors (advanced, efficient)
+
+Use one thread for all clients
+
+OS tells you who has data ready
+
+Needed for hundreds/thousands of clients
+
+Already explained in my previous message
+
+4️⃣ Closing the server
+server_sock.close()
+
+
+Stops listening
+
+All client sockets should be closed individually
+
+Always close in finally block if possible
+
+5️⃣ Adding timeout for safe blocking
+
+You can also use timeouts instead of threads/non-blocking:
+
+server_sock.settimeout(5)  # accept() will raise socket.timeout
+
+
+Prevents server from freezing forever
+
+Good for learning/testing
+
+6️⃣ Mental picture (TCP server)
+[Server socket] --accept()--> [Client socket] <--data--> client
+
+
+Server socket → listening only
+
+Client socket → actual communication
+
+Ah! This is another important detail that confuses beginners, and it’s subtle but critical. Let me explain clearly.
+
+1️⃣ send() vs sendall() — the high-level difference
+Method	What it does
+send()	Tries to send some bytes, may send less than you asked. Returns number of bytes sent
+sendall()	Keeps sending until all bytes are sent (or an error occurs). Returns None if successful
+2️⃣ Why this happens
+
+TCP is a stream protocol:
+
+OS maintains send buffers
+
+send() only writes as much as the buffer can accept
+
+So if your data is large, send() may send partial data
+
+Example:
+
+sent = client_sock.send(b"Hello world")
+print(sent)  # could be less than 11
+
+
+You now have to handle the unsent part manually:
+
+data = b"Hello world"
+total_sent = 0
+while total_sent < len(data):
+    sent = client_sock.send(data[total_sent:])
+    total_sent += sent
+
+
+✅ This is exactly what sendall() does for you internally.
+
+3️⃣ sendall() example
+client_sock.sendall(b"Hello world")
+
+
+Sends entire 11 bytes
+
+Blocks until done (or error)
+
+Returns None
+
+You don’t need a loop
+
+4️⃣ When to use which
+Use case	Recommendation
+Small messages (few bytes)	send() is fine
+Large messages or unknown size	sendall()
+Non-blocking sockets	Use send() carefully with a loop; sendall() may block indefinitely
+
+Remember: sendall() is just a convenience wrapper around repeated send() calls.
+
+5️⃣ Example with blocking vs non-blocking
+# blocking socket
+sock.sendall(b"A"*1000000)  # ensures everything is sent
+
+# non-blocking socket
+sock.setblocking(False)
+data = b"A"*1000000
+sent = 0
+while sent < len(data):
+    try:
+        n = sock.send(data[sent:])
+        sent += n
+    except BlockingIOError:
+        # wait a bit, try again
+        continue
+
+
+On non-blocking sockets, you can’t blindly use sendall(), because it may raise BlockingIOError.
+
+On blocking sockets, sendall() is safe and simple.
+
+6️⃣ Key mental picture
+
+Think of TCP like a pipe:
+
+send() → “pour water into the pipe, as much as the pipe can take right now”
+
+sendall() → “keep pouring until all the water is in the pipe”
+
+✅ Summary
+
+send() → maybe partial, returns bytes sent
+
+sendall() → keeps sending until everything is sent, returns None
+
+Non-blocking sockets → handle partial sends manually
+
+Blocking sockets → sendall() is easiest
+
+If you want, I can now make a full “client ↔ server TCP flow cheat sheet”, showing:
+
+accept()
+
+recv() (partial reads)
+
+send() vs sendall()
+
+Blocking / timeout behavior
+
+…all in one visual diagram for easy reference.
+1️⃣ Is there recvall()?
+
+✅ No, Python socket does not have recvall() built-in.
+
+Why?
+
+TCP is a stream → the OS doesn’t know the message boundary
+
+recv(n) → returns up to n bytes, might be less
+
+So, to “receive all” bytes, you have to write your own loop.
+
+1a. Example: receive exact number of bytes
+def recvall(sock, n):
+    data = b""
+    while len(data) < n:
+        packet = sock.recv(n - len(data))
+        if not packet:
+            # connection closed by peer
+            break
+        data += packet
+    return data
+
+
+Works with blocking sockets
+
+Waits until exactly n bytes arrive (or connection closes)
+
+1b. Example: receive until connection closes
+def recv_until_close(sock):
+    data = b""
+    while True:
+        packet = sock.recv(4096)
+        if not packet:  # EOF
+            break
+        data += packet
+    return data
+
+
+Useful for simple protocols (like HTTP/1.0 without Content-Length)
+
+2️⃣ BufferedReader / BufferedWriter
+
+Python’s socket objects can be wrapped in file-like objects, which gives you high-level buffered I/O:
+
+import socket
+
+sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+sock.connect(("example.com", 80))
+
+# wrap in buffered reader/writer
+file = sock.makefile("rwb")  # read/write in binary
+
+
+Now you can use read(), readline(), write(), flush()
+
+The buffer handles partial TCP reads/writes automatically
+
+Example: sending HTTP request
+file.write(b"GET / HTTP/1.1\r\nHost: example.com\r\n\r\n")
+file.flush()  # important to actually send buffered data
+
+# read one line at a time
+line = file.readline()
+print(line)
+
+
+readline() reads until \n
+
+read(n) reads exactly n bytes (blocks if not enough)
+
+Example: reading entire response
+response = file.read()  # blocks until connection closes
+print(response)
+
+
+Useful for blocking sockets
+
+BufferedReader hides partial recv() complexity
+
+3️⃣ Why this is useful
+
+You don’t have to manually loop over recv()
+
+Handles message boundaries (line, fixed-length, etc.)
+
+Works like a normal file → easy for beginners
+
+TCP still sends bytes in chunks, but BufferedReader/Writer abstracts it
+
+4️⃣ Things to remember
+
+makefile() does not create a new socket, just a wrapper
+
+Remember to flush() after writing, else data may stay in buffer
+
+Closing the file also closes the underlying socket
+
+Works well with blocking sockets; less common with non-blocking
+
+5️⃣ Mental model
+socket.recv()       ← low-level, partial, byte stream
+BufferedReader.read() / readline() ← high-level, buffered, line-aware
+BufferedWriter.write() + flush()   ← high-level, buffered send
+
+
+✅ Summary
+
+No recvall(), but you can implement loops to read exact number of bytes
+
+makefile() → gives BufferedReader/Writer interface for line, block, or full reads
+
+Makes client/server code much simpler
+
+1️⃣ What setsockopt() is
+
+setsockopt(level, option, value) lets you configure socket behavior at runtime.
+
+level → where the option lives (socket-level, TCP-level, IP-level)
+
+option → specific setting
+
+value → what you set it to (integer, struct, bytes…)
+
+Python signature:
+
+sock.setsockopt(level, option, value)
+
+2️⃣ Common levels
+Level	Meaning
+socket.SOL_SOCKET	Generic socket options (applies to any protocol)
+socket.IPPROTO_TCP	TCP-specific options
+socket.IPPROTO_IP	IPv4-level options
+socket.IPPROTO_IPV6	IPv6-level options
+3️⃣ Common SO_ socket options*
+Option	Level	Effect
+SO_REUSEADDR	SOL_SOCKET	Allows re-binding to the same address/port quickly
+SO_REUSEPORT	SOL_SOCKET	Multiple sockets bind to same port (load balancing)
+SO_KEEPALIVE	SOL_SOCKET	Sends periodic probes to detect dead TCP peers
+SO_LINGER	SOL_SOCKET	Controls behavior of close() (wait for unsent data or discard)
+SO_RCVBUF	SOL_SOCKET	Set receive buffer size (tuning performance)
+SO_SNDBUF	SOL_SOCKET	Set send buffer size (tuning performance)
+SO_BROADCAST	SOL_SOCKET	Enable sending UDP broadcasts
+TCP_NODELAY	IPPROTO_TCP	Disable Nagle algorithm (send small packets immediately)
+4️⃣ Example 1 — Reuse address
+import socket
+
+server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+# allows quick restart of server
+server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
+server.bind(("0.0.0.0", 5000))
+server.listen()
+
+
+Without SO_REUSEADDR, if you restart server quickly after closing, you might get:
+
+OSError: [Errno 98] Address already in use
+
+5️⃣ Example 2 — Keepalive TCP
+sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+sock.connect(("example.com", 80))
+
+# Enable TCP keepalive
+sock.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
+
+
+OS sends periodic probes if connection is idle
+
+Detects dead peers
+
+Can also tune intervals at OS-level (TCP_KEEPIDLE, TCP_KEEPINTVL)
+
+6️⃣ Example 3 — TCP_NODELAY
+sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+sock.connect(("example.com", 80))
+
+# Disable Nagle algorithm
+sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+
+
+Normally, TCP coalesces small packets to reduce traffic
+
+TCP_NODELAY = 1 → send small packets immediately
+
+Useful for real-time apps / games / low-latency protocols
+
+7️⃣ Example 4 — Send/Receive buffer size
+sock.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 65536)
+sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 65536)
+
+
+Default OS buffers might be small
+
+Increasing buffers → better throughput for high-bandwidth connections
+
+8️⃣ Example 5 — SO_LINGER
+
+Controls what happens when you call close():
+
+import struct
+
+# linger on, 5 seconds
+sock.setsockopt(socket.SOL_SOCKET, socket.SO_LINGER, struct.pack('ii', 1, 5))
+
+
+If unsent data exists, close() waits up to 5 seconds
+
+If linger off → close() returns immediately, OS discards unsent data
+
+9️⃣ Other advanced uses
+
+SO_BROADCAST → UDP broadcasts
+
+IP_MULTICAST_TTL → set multicast TTL
+
+IP_TOS → Type of Service / QoS flags
+
+TCP_QUICKACK → immediate ACK (Linux-specific)
+
+These are often used in servers, routers, real-time apps, and high-performance networking.
+
+🔟 Mental model
+socket → low-level network pipe
+setsockopt() → tweak how the pipe behaves
+recv()/send()/accept() → normal operations
+
+
+SO_* → generic socket options
+
+TCP_* → TCP-specific tweaks
+
+IP_* → IP-level tweaks
+
+1️⃣1️⃣ Practical tip
+
+Always use SO_REUSEADDR for servers
+
+Use TCP_NODELAY for low-latency apps
+
+Use SO_KEEPALIVE for long-lived TCP connections
+
+Use SO_SNDBUF / SO_RCVBUF to tune performance for large data transfers
+1️⃣ The difference between server socket and client sockets
+
+A TCP server usually has two types of sockets:
+
+Listening socket (server_sock)
+
+Created with socket() and bind()
+
+Used only for accept()
+
+Does not communicate directly with clients
+
+Client sockets (client_sock)
+
+Returned by accept()
+
+Used for actual send/recv with a client
+
+2️⃣ What happens if you close only the listening socket
+server_sock.close()  # close listening socket
+
+
+Effect:
+
+Stops listening for new connections
+
+Does not automatically close existing client sockets
+
+So if you already accepted some clients:
+
+client_sock, addr = server_sock.accept()
+# connected
+
+
+client_sock is independent
+
+Closing server_sock does not close client_sock
+
+✅ The existing connections remain active until you close them explicitly.
+
+3️⃣ What happens if you never close client_sock?
+
+OS will eventually clean up when process exits
+
+But until then:
+
+Connection stays open
+
+TCP resources (file descriptors, buffers) are still in use
+
+This is called a “dangling socket” → can lead to resource leaks
+
+4️⃣ What happens if you close client_sock but not server socket
+client_sock.close()  # closes connection to this client
+
+
+Other clients still connected → unaffected
+
+Server still accepts new clients
+
+5️⃣ How TCP actually closes connections
+
+TCP has graceful shutdown:
+
+close() → sends FIN to the other side
+
+Peer receives recv() → returns b"" → EOF
+
+Connection fully closes after 2 FIN/ACK exchanges
+
+Closing listening socket does not send FIN to existing clients — it only stops listening.
+
+6️⃣ Example
+import socket
+
+server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+server.bind(("0.0.0.0", 5000))
+server.listen()
+
+client_sock, addr = server.accept()
+print("Client connected:", addr)
+
+server.close()  # stops listening
+
+# client_sock still usable
+client_sock.sendall(b"Hello!")
+data = client_sock.recv(1024)
+client_sock.close()  # now fully closed
+
+
+server.close() → no new connections
+
+Existing client_sock → still works
+
+✅ Key points
+
+Server socket (server_sock) and client sockets (client_sock) are independent
+
+Closing server socket: stops new connections only
+
+Existing client connections remain until you close their socket
+
+Closing all connections requires:
+
+for client in all_clients:
+    client.close()
+server.close()
+
+
+Best practice: always close client sockets to avoid resource leaks
+
+💡 Mental picture:
+
+[server_sock] --listening--> |accept| -> [client_sock 1] <--> client1
+                              |accept| -> [client_sock 2] <--> client2
+
+Closing server_sock:
+- stops accept()
+- client_sock 1 & 2 remain active
+
+-----
+ssl
+1️⃣ What SSL/TLS is
+
+SSL/TLS = Secure Sockets Layer / Transport Layer Security
+
+Wraps a TCP connection with encryption, authentication, and integrity
+
+All Python socket concepts still apply; SSL just wraps the socket
+
+Why use SSL?
+
+Encrypts data (prevents eavesdropping)
+
+Verifies server (and optionally client) identity
+
+Ensures data is not tampered
+
+2️⃣ Python module: ssl
+
+Python provides the ssl module to secure sockets.
+
+Key functions:
+
+Function	Purpose
+ssl.wrap_socket()	Legacy way to wrap a socket (deprecated in favor of SSLContext)
+ssl.SSLContext()	Modern way to configure SSL options
+context.wrap_socket()	Wrap a socket for secure connection
+ssl.create_default_context()	Preconfigured secure context
+3️⃣ Basic SSL client
+import socket, ssl
+
+hostname = 'www.google.com'
+port = 443  # HTTPS
+
+# 1. Create normal socket
+sock = socket.create_connection((hostname, port))
+
+# 2. Wrap socket with SSL
+context = ssl.create_default_context()
+ssl_sock = context.wrap_socket(sock, server_hostname=hostname)
+
+# 3. Send/recv like normal
+ssl_sock.sendall(b"GET / HTTP/1.1\r\nHost: www.google.com\r\n\r\n")
+data = ssl_sock.recv(4096)
+print(data.decode())
+
+# 4. Close connection
+ssl_sock.close()
+
+
+✅ Notes:
+
+wrap_socket() or SSLContext.wrap_socket() wraps the TCP socket in encrypted channel
+
+After wrapping, send/recv work exactly like normal sockets
+
+4️⃣ Basic SSL server
+import socket, ssl
+
+# 1. Create listening socket
+server_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server_sock.bind(('0.0.0.0', 8443))
+server_sock.listen(5)
+
+# 2. Create SSL context
+context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+context.load_cert_chain(certfile='server.crt', keyfile='server.key')
+
+print("Server listening on 8443...")
+
+while True:
+    client_sock, addr = server_sock.accept()
+    
+    # 3. Wrap client socket in SSL
+    ssl_client = context.wrap_socket(client_sock, server_side=True)
+    
+    data = ssl_client.recv(1024)
+    print(f"Received from {addr}:", data)
+    ssl_client.sendall(b"Hello SSL client!\n")
+    ssl_client.close()
+
+
+Requires a server certificate (.crt) and private key (.key)
+
+Works similarly to normal sockets, but traffic is encrypted
+
+5️⃣ SSL Contexts and options
+
+SSLContext allows you to:
+
+Choose protocol: ssl.PROTOCOL_TLS_CLIENT / ssl.PROTOCOL_TLS_SERVER
+
+Load certificates and keys (load_cert_chain)
+
+Configure verification mode:
+
+context.verify_mode = ssl.CERT_REQUIRED
+context.check_hostname = True
+
+
+Control ciphers and SSL features:
+
+context.set_ciphers("ECDHE+AESGCM")
+
+
+Disable insecure versions (TLS 1.0, SSLv3)
+
+6️⃣ Differences from normal sockets
+Feature	TCP socket	SSL/TLS socket
+send/recv	raw bytes	encrypted bytes
+handshake	none	automatic handshake on wrap
+certificates	not used	optional/required
+security	none	confidentiality + integrity + authenticity
+7️⃣ Common patterns
+
+HTTPS client → wrap socket with SSLContext, verify server certificate
+
+Secure chat server → wrap accepted sockets in SSL
+
+Mutual TLS → both client and server verify each other’s certificate
+
+8️⃣ Practical tips
+
+Always use ssl.create_default_context() for clients → safe defaults
+
+Always check server_hostname for certificate verification
+
+Don’t use legacy ssl.wrap_socket() unless needed
+
+Certificates can be self-signed for testing; in production, use CA-signed
+
+sendall() / recv() still works normally, buffering is handled inside SSL
+
+9️⃣ Mental model
+[Client app] ↔ [SSL socket wrapper] ↔ [TCP socket] ↔ network
+[Server app] ↔ [SSL socket wrapper] ↔ [TCP socket] ↔ network
+
+
+SSL wrapper does handshake, encryption, decryption
+
+Application code mostly doesn’t change
+
+
+1️⃣ Can you do SSL/TLS without a certificate?
+
+✅ Yes, but very limited.
+
+TLS normally requires a server certificate to authenticate the server to the client.
+
+Anonymous TLS (sometimes called ADH – Anonymous Diffie-Hellman) exists, but:
+
+No authentication → anyone could pretend to be your server
+
+Not supported by default in most libraries and browsers
+
+Rarely used in practice, mostly for testing encrypted channels
+
+In Python, the standard ssl module does not provide a simple "no certificate" TLS mode by default.
+You can simulate it with self-signed certificates or using SSLContext with check_hostname / verify_mode off.
+
+2️⃣ Simplest “certificate-less” approach (self-signed)
+
+For testing / learning, you can:
+
+import socket, ssl
+
+# Connect to server
+hostname = 'localhost'
+port = 8443
+
+# 1. Create a context for client
+context = ssl.create_default_context()
+# 2. Do not verify certificate (insecure!)
+context.check_hostname = False
+context.verify_mode = ssl.CERT_NONE
+
+sock = socket.create_connection((hostname, port))
+ssl_sock = context.wrap_socket(sock, server_hostname=hostname)
+
+ssl_sock.sendall(b"Hello anonymous TLS!\n")
+data = ssl_sock.recv(1024)
+print(data)
+ssl_sock.close()
+
+
+This is encrypted communication, but no server identity verification.
+Equivalent to “anonymous TLS” in practice.
+
+3️⃣ Server side — no real certificate (for testing)
+
+Python’s SSLContext still needs some certificate to work:
+
+Generate a self-signed certificate quickly:
+
+openssl req -x509 -newkey rsa:2048 -keyout key.pem -out cert.pem -days 1 -nodes
+
+
+Then use it:
+
+import socket, ssl
+
+server_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server_sock.bind(('0.0.0.0', 8443))
+server_sock.listen(5)
+
+context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+context.load_cert_chain(certfile='cert.pem', keyfile='key.pem')
+
+while True:
+    client_sock, addr = server_sock.accept()
+    ssl_client = context.wrap_socket(client_sock, server_side=True)
+    data = ssl_client.recv(1024)
+    print("Received:", data)
+    ssl_client.sendall(b"Hello anonymous TLS client!")
+    ssl_client.close()
+
+
+Certificate is technically required by the protocol, but you can ignore it on the client.
+
+4️⃣ True anonymous TLS (ADH)
+
+ADH cipher suites exist (e.g., ADH-AES128-SHA)
+
+Python’s default OpenSSL usually does not allow ADH because it’s insecure
+
+Can be enabled manually:
+
+context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+context.set_ciphers('ADH-AES128-SHA')  # very insecure
+
+
+Only for testing learning purposes, never in production.
+
+Both client and server must agree on ADH cipher suite.
+
+5️⃣ Key points
+Feature	Normal TLS	Anonymous TLS / No verify
+Encryption	✅	✅
+Server authentication	✅	❌
+Client verification	optional	❌
+Supported in browsers	✅	❌ (browsers block)
+Safe for production	✅	❌
+6️⃣ Recommended for learning
+
+Use self-signed certificate + client disables verification
+
+Gives you encrypted channel without worrying about certificates
+
+Easy to experiment with Python SSL
+
+💡 Mental model:
+
+TCP socket
+   ↓ wrap with SSLContext
+   ↓ encryption only, no server verification
+
+
+Works like real SSL, but anyone can pretend to be the server.
+1️⃣ Basic SSL/TLS usage
+
+Wrap normal TCP sockets with ssl.SSLContext → gives encrypted channel
+
+Use sendall() / recv() normally
+
+Client verifies server certificate (or disables verification for testing)
+
+Server needs at least a self-signed certificate
+
+2️⃣ Advanced SSL/TLS usage
+
+SSLContext configuration:
+
+Protocols: PROTOCOL_TLS_CLIENT / PROTOCOL_TLS_SERVER
+
+Cipher suites: context.set_ciphers()
+
+Hostname verification: check_hostname
+
+Certificate verification: verify_mode
+
+Anonymous / certificate-less TLS:
+
+Possible via verify_mode = CERT_NONE on client side
+
+Real “ADH” cipher suites are insecure and mostly for learning/testing
+
+Fine control of encryption and behavior:
+
+Can set TLS versions, enable/disable insecure ciphers
+
+Works with timeouts, sendall/recvall, and buffered I/O just like normal sockets
+
+3️⃣ Integration with everything you learned before
+
+Works with:
+
+Blocking sockets + timeouts
+
+Client/server models
+
+Multiple clients (threads or selectors)
+
+BufferedReader / BufferedWriter via ssl_sock.makefile()
+
+Everything else (setsockopt, Nagle algorithm, keepalive) still applies
+
+✅ So yes — SSL/TLS is now fully covered:
+
+Basics → encrypted TCP connection
+
+Advanced → client/server verification, SSLContext tuning, anonymous TLS, cipher selection, real-world usage
+
+
+----
+
+
+select
+1️⃣ What select is
+
+select monitors multiple file descriptors (sockets, pipes, etc.)
+
+Tells you which sockets are ready for reading, writing, or have errors
+
+Avoids blocking on a single socket → efficient I/O
+
+Python function:
+
+import select
+
+rlist, wlist, xlist = select.select(read_sockets, write_sockets, error_sockets, timeout)
+
+
+read_sockets → sockets you want to check if ready to read
+
+write_sockets → sockets you want to check if ready to write
+
+error_sockets → sockets you want to check for errors
+
+timeout → how long to wait (seconds)
+
+Returns lists of sockets that are ready.
+
+2️⃣ Basic example (non-blocking echo server)
+import socket, select
+
+server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+server.bind(("0.0.0.0", 9000))
+server.listen()
+server.setblocking(False)
+
+sockets = [server]  # list of sockets to monitor
+
+while True:
+    # check which sockets are ready
+    read_socks, write_socks, error_socks = select.select(sockets, [], [], 1)
+    
+    for s in read_socks:
+        if s is server:
+            # new client
+            client, addr = server.accept()
+            client.setblocking(False)
+            sockets.append(client)
+            print("New client", addr)
+        else:
+            # existing client sent data
+            data = s.recv(1024)
+            if not data:
+                print("Client disconnected")
+                sockets.remove(s)
+                s.close()
+            else:
+                print("Received:", data)
+                s.sendall(data)  # echo
+
+
+✅ Notes:
+
+Non-blocking server → uses select to wait only for ready sockets
+
+No busy-wait
+
+Can handle many clients without threads
+
+3️⃣ Timeout
+
+timeout=None → blocks indefinitely until at least one socket is ready
+
+timeout=0 → non-blocking poll (returns immediately)
+
+timeout=5 → wait up to 5 seconds
+
+rlist, _, _ = select.select([sock], [], [], 5)
+if rlist:
+    data = rlist[0].recv(1024)
+
+4️⃣ Writing & errors
+
+wlist → sockets ready to send (won’t block)
+
+xlist → sockets with exceptional conditions (errors, disconnects)
+
+rlist, wlist, xlist = select.select(read_sockets, write_sockets, error_sockets, 1)
+for s in wlist:
+    s.sendall(b"Hello")  # safe, won’t block
+
+5️⃣ Advantages of select
+
+Efficient I/O multiplexing
+
+No need for one thread per client
+
+Works with blocking and non-blocking sockets
+
+6️⃣ Limitations
+
+select on Windows: works with sockets only, not files
+
+File descriptor limit: ~1024 on Unix (per process)
+
+For many sockets, selectors module is preferred (Python 3.4+)
+-----not learning now  ,not a  standard librray----
+7️⃣ Using selectors (modern version of select)
+import selectors, socket
+
+sel = selectors.DefaultSelector()
+server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+server.bind(("0.0.0.0", 9000))
+server.listen()
+server.setblocking(False)
+
+sel.register(server, selectors.EVENT_READ, data=None)
+
+while True:
+    events = sel.select(timeout=1)
+    for key, mask in events:
+        if key.data is None:
+            client, addr = server.accept()
+            client.setblocking(False)
+            sel.register(client, selectors.EVENT_READ, data=b"")
+        else:
+            client = key.fileobj
+            data = client.recv(1024)
+            if not data:
+                sel.unregister(client)
+                client.close()
+            else:
+                client.sendall(data)
+
+
+Selectors wrap select (or poll/epoll) automatically
+
+Can handle thousands of connections efficiently
+-----------------------------------------------
+8️⃣ Mental model
+[server socket] --accept--> [client sockets]
+      │
+      └── select monitors all sockets
+             ├─ ready to read? → recv()
+             ├─ ready to write? → send()
+             └─ error? → handle/close
+
+
+You don’t block on any single socket
+
+Can scale to multiple clients easily
+
+✅ Summary
+
+select.select() → wait for read/write/error readiness on multiple sockets
+
+Works for non-blocking I/O and multiplexing
+
+Modern alternative → selectors module
+
+Perfect for high-performance servers without threads
+
+What select.select() does
+
+Monitors multiple sockets (or file descriptors) at once
+
+Tells you which sockets are ready to read, write, or have errors
+
+Lets you avoid blocking on one socket
+
+import select
+
+rlist, wlist, xlist = select.select(read_sockets, write_sockets, error_sockets, timeout)
+
+
+read_sockets → sockets you want to check for read readiness
+
+write_sockets → sockets you want to check for write readiness
+
+error_sockets → sockets you want to check for errors
+
+timeout → seconds to wait (None = block indefinitely, 0 = non-blocking)
+
+Returns lists of sockets that are ready.
+
+2️⃣ Simple example — echo server
+import socket, select
+
+server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+server.bind(("0.0.0.0", 9000))
+server.listen()
+server.setblocking(False)  # non-blocking server
+
+sockets = [server]  # monitor server socket + clients
+
+while True:
+    read_socks, _, _ = select.select(sockets, [], [], 1)  # 1 sec timeout
+    
+    for s in read_socks:
+        if s is server:
+            # new client
+            client, addr = server.accept()
+            client.setblocking(False)
+            sockets.append(client)
+            print("New client:", addr)
+        else:
+            # existing client sent data
+            data = s.recv(1024)
+            if not data:
+                print("Client disconnected")
+                sockets.remove(s)
+                s.close()
+            else:
+                print("Received:", data)
+                s.sendall(data)  # echo back
+
+
+✅ Key points:
+
+server socket → accept new connections
+
+Client sockets → check recv() only if ready to read
+
+select ensures no socket blocks the others
+
+3️⃣ Timeout behavior
+
+timeout=None → block forever until one socket is ready
+
+timeout=0 → non-blocking poll (returns immediately)
+
+timeout=x → wait up to x seconds
+
+rlist, _, _ = select.select([server], [], [], 5)  # wait max 5s
+
+4️⃣ Writing & error handling
+read_socks, write_socks, error_socks = select.select(sockets, sockets, sockets, 1)
+
+for s in write_socks:
+    s.sendall(b"Ready to write safely")
+
+for s in error_socks:
+    print("Error on socket, closing")
+    sockets.remove(s)
+    s.close()
+
+
+Only send when socket is ready → avoids BlockingIOError
+
+Monitor xlist for exceptions → clean up disconnected sockets
+
+5️⃣ Why select is useful
+
+Handles many clients with one thread
+
+Works for non-blocking I/O
+
+Avoids thread per client → less overhead
+
+6️⃣ Mental model
+[Server Socket] --> accept() new clients
+[Client Sockets] --> recv() / send() data
+       │
+       └── select monitors all sockets:
+             - ready to read?
+             - ready to write?
+             - error?
+
+
+You loop forever and process only ready sockets
+
+✅ Summary
+
+select.select() = low-level I/O multiplexing
+
+Works with blocking or non-blocking sockets
+
+Returns ready-to-read, ready-to-write, and error sockets
+
+Perfect for scalable servers without threads
+✅ Select-based server: send fixed data to all clients
+import socket
+import select
+import time
+
+HOST = "0.0.0.0"
+PORT = 9000
+FIXED_MESSAGE = b"Hello from server!\n"
+
+# Create server socket
+server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+server.bind((HOST, PORT))
+server.listen()
+server.setblocking(False)
+
+# List of all sockets to monitor
+sockets = [server]
+
+print("Server running on port", PORT)
+
+while True:
+    # Monitor all sockets for read & errors
+    r_ready, _, e_ready = select.select(sockets, [], sockets, 1)
+
+    # Handle readable sockets
+    for s in r_ready:
+        if s is server:
+            # Accept new client
+            client, addr = server.accept()
+            client.setblocking(False)
+            sockets.append(client)
+            print("New client connected:", addr)
+        else:
+            # Receive data (just to detect disconnection)
+            try:
+                data = s.recv(1024)
+            except ConnectionResetError:
+                data = b""
+
+            if not data:
+                print("Client disconnected")
+                sockets.remove(s)
+                s.close()
+            else:
+                print(f"Received from {s.getpeername()}: {data}")
+
+    # Broadcast fixed message to all clients (excluding server socket)
+    for s in sockets:
+        if s is not server:
+            try:
+                s.sendall(FIXED_MESSAGE)
+            except (BrokenPipeError, ConnectionResetError):
+                print("Client disconnected during send")
+                sockets.remove(s)
+                s.close()
+
+    # Handle sockets with errors
+    for s in e_ready:
+        print("Socket error, closing:", s)
+        if s in sockets:
+            sockets.remove(s)
+        s.close()
+
+    # Optional: slow down loop a bit
+    time.sleep(1)
+
+🔹 How it works
+
+Server listens on port 9000, non-blocking
+
+Select checks all sockets for:
+
+New connections (server)
+
+Readable client sockets (to detect disconnects)
+
+Errors
+
+Broadcast the FIXED_MESSAGE to all clients every loop iteration
+
+Disconnects and errors are handled safely
+
+🔹 Key points
+
+select ensures you don’t block on any socket
+
+You don’t need a separate write buffer because you always send the same fixed message
+
+Works even if some clients don’t send anything — they still receive the message
+
+Can be used for:
+
+Heartbeats
+
+Notifications
+
+Broadcasting messages to multiple clients
+
+🔹 Mental model
+Server socket: accept new clients
+Client sockets: check for disconnects
+Loop:
+    -> send fixed message to all clients
+
+
+No queue required
+
+Simple and immediate sending
+1️⃣ wlist (write-ready sockets)
+rlist, wlist, xlist = select.select(read_sockets, write_sockets, error_sockets, timeout)
+
+
+wlist → sockets ready to write without blocking
+
+Ready to write means: OS socket buffer has space to accept new data for sending
+
+If you call send() on a socket not in wlist, it might block (if non-blocking socket, raises BlockingIOError)
+
+2️⃣ Are clients always ready to write?
+
+For normal TCP sockets, yes — almost always
+
+OS socket buffers are usually empty, so you can call send() immediately
+
+Only exceptions:
+
+High traffic / slow client → socket send buffer full → send() blocks
+
+Non-blocking socket → send() will raise BlockingIOError if buffer is full
+
+So for lightweight servers, you might not even need a separate wlist — sending normally works
+
+3️⃣ Example: using wlist efficiently
+import socket, select
+
+server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+server.bind(("0.0.0.0", 9000))
+server.listen()
+server.setblocking(False)
+
+clients = []
+message_to_send = b"Hello client!\n"
+
+while True:
+    r_ready, w_ready, e_ready = select.select([server]+clients, clients, [server]+clients, 1)
+
+    # Accept new clients
+    for s in r_ready:
+        if s is server:
+            client, addr = server.accept()
+            client.setblocking(False)
+            clients.append(client)
+            print("New client", addr)
+
+    # Send to clients ready for writing
+    for s in w_ready:
+        try:
+            s.sendall(message_to_send)
+        except (BrokenPipeError, ConnectionResetError):
+            print("Client disconnected")
+            clients.remove(s)
+            s.close()
+
+    # Handle errors
+    for s in e_ready:
+        if s in clients: clients.remove(s)
+        s.close()
+
+
+✅ Notes:
+
+clients → all connected clients
+
+w_ready → subset of clients actually ready to accept data
+
+For light traffic, all clients are usually in w_ready
+
+4️⃣ Best practices
+
+Only put sockets in wlist if you have data to send
+
+write_list = [s for s in clients if pending_data[s]]
+
+
+Don’t loop sending to all sockets blindly — can block if some are slow
+
+For most lightweight servers:
+
+You can often ignore wlist and just call sendall() on all clients
+
+OS usually handles buffering automatically
+
+5️⃣ Mental model
+TCP socket
+    ├─ read-ready? → recv() safely
+    ├─ write-ready? → send() safely
+    └─ error? → close socket
+
+
+select tells you exactly which sockets won’t block on send()
+
+Most clients are ready to write unless they are slow
+
+1️⃣ Why we call client.setblocking(False) after accept()
+client, addr = server.accept()
+client.setblocking(False)
+
+
+server.accept() always returns a new socket for the client
+
+By default, all sockets are blocking in Python
+
+If you don’t set client.setblocking(False):
+
+Any recv() call on that client will block if there is no data
+
+Any send() might block if OS buffer is full
+
+In a select-based loop, blocking sockets defeat the purpose of select:
+
+Even if select says “this socket is ready,” a blocking recv() might still hang if something unexpected happens
+
+2️⃣ What happens if you don’t make it non-blocking?
+
+select can still monitor the socket for read readiness
+
+But if you call recv() and something unusual happens (like the client disconnects, or the TCP stack buffers a partial packet), your server could block on that client
+
+For small servers it might seem fine, but it’s unsafe in production / multiple clients
+
+3️⃣ Key point
+
+Server socket: also set to non-blocking
+
+So accept() never blocks
+
+Client sockets: set to non-blocking
+
+So recv() / send() never blocks
+
+select ensures you only operate on ready sockets, so non-blocking prevents accidental hangs
+
+4️⃣ Quick comparison
+Socket Type	recv() / send() behavior	Use in select?
+Blocking	Blocks until data / buffer free	Can block server accidentally
+Non-blocking	Returns immediately (may raise BlockingIOError)	Perfect with select
+select	Monitors readiness	Must combine with non-blocking for safety
+5️⃣ Mental model
+Server socket (non-blocking)
+    └─ accept() new clients immediately
+
+Client sockets (non-blocking)
+    └─ recv() → only reads available data, never blocks
+    └─ send() → only writes to buffer, never blocks
+
+
+select → tells you which sockets are safe to read/write
+
+non-blocking → ensures your code never hangs unexpectedly
+
+
+----
+
+re
+1️⃣ What re is
+
+Module for pattern matching in strings
+
+Uses regular expressions, which are like mini languages for string patterns
+
+Can be used for:
+
+Validation (email, IP, phone)
+
+Search and extract
+
+Replace / modify strings
+
+Splitting strings by complex patterns
+
+import re
+
+2️⃣ Core functions
+Function	Description
+re.match(pattern, string)	Checks if pattern matches at the beginning
+re.search(pattern, string)	Finds first occurrence anywhere
+re.findall(pattern, string)	Returns all matches as list
+re.finditer(pattern, string)	Returns iterator of match objects
+re.sub(pattern, repl, string)	Replace matches with repl
+re.split(pattern, string)	Split string by pattern
+3️⃣ Simple examples
+import re
+
+# Match at start
+m = re.match(r"\d+", "123abc")
+print(m.group())  # 123
+
+# Search anywhere
+s = re.search(r"abc", "123abc456")
+
+print(s.group())  # abc
+
+# Find all numbers
+numbers = re.findall(r"\d+", "12 34 56")
+print(numbers)  # ['12', '34', '56']
+
+# Replace
+new_text = re.sub(r"\d+", "#", "abc123def456")
+print(new_text)  # abc#def#
+
+4️⃣ Match objects
+
+re.search or re.match returns a match object:
+
+m = re.search(r"(\d+)-(\d+)", "Phone: 123-456")
+print(m.group())    # 123-456
+print(m.group(1))   # 123
+print(m.group(2))   # 456
+
+
+group() → full match
+
+group(n) → capture group
+
+5️⃣ Raw strings
+
+Always use r"..." for patterns → avoids escaping \ twice
+
+re.search(r"\d+\.\d+", "Value: 3.14")
+
+6️⃣ Character classes / special symbols
+Symbol	Meaning
+.	Any character except newline
+\d	Digit [0-9]
+\D	Not a digit
+\w	Word character [a-zA-Z0-9_]
+\W	Not a word character
+\s	Whitespace
+\S	Non-whitespace
+^	Start of string
+$	End of string
+[]	Character set
+*	0 or more
++	1 or more
+?	0 or 1
+{n,m}	Between n and m repetitions
+()	Capture group
+7️⃣ Example — extract email addresses
+text = "Emails: alice@test.com, bob@mail.org"
+pattern = r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}"
+emails = re.findall(pattern, text)
+print(emails)  # ['alice@test.com', 'bob@mail.org']
+
+8️⃣ Why re seems “big”
+
+The module itself is small in code
+
+But regular expressions have many symbols and combinations → learning curve
+
+Once you know the basics (match, search, findall, sub, capture groups), you can do 90% of practical tasks
+
+9️⃣ Advanced features (optional for later)
+
+Lookahead / lookbehind: (?=...), (?<=...)
+
+Non-capturing groups: (?:...)
+
+Flags: re.IGNORECASE, re.MULTILINE, re.DOTALL
+
+Compiled regex: pattern = re.compile(r"\d+") → faster for repeated use
+
+1️⃣ Lookahead and Lookbehind
+
+These are zero-width assertions — they check for a pattern without consuming characters.
+
+🔹 Positive lookahead (?=...)
+
+Checks if a pattern is followed by another pattern
+
+Doesn’t include the “following pattern” in the match
+
+import re
+
+text = "apple123 banana456 cherry789"
+# Find digits **only if followed by ' '**
+pattern = r"\d+(?=\s)"
+matches = re.findall(pattern, text)
+print(matches)  # ['123', '456', '789']
+
+
+✅ Explanation:
+
+\d+ → match digits
+
+(?=\s) → only if followed by whitespace
+
+Matched value = only digits, whitespace not included
+
+🔹 Positive lookbehind (?<=...)
+
+Checks if a pattern is preceded by another pattern
+
+Doesn’t include the “preceding pattern” in the match
+
+text = "apple123 banana456 cherry789"
+pattern = r"(?<=\D)\d+"  # digits preceded by non-digit
+matches = re.findall(pattern, text)
+print(matches)  # ['123', '456', '789']
+
+
+✅ Explanation:
+
+(?<=\D) → only digits preceded by non-digit
+
+Useful for context-sensitive matching
+
+🔹 Negative lookahead / lookbehind
+
+Negative lookahead: (?!...) → pattern must not follow
+
+Negative lookbehind: (?<!...) → pattern must not precede
+
+text = "cat bat rat"
+pattern = r"\b\w+(?<!at)\b"  # words not ending with 'at'
+matches = re.findall(pattern, text)
+print(matches)  # []  (in this case all end with 'at', so empty)
+
+2️⃣ Non-capturing groups (?:...)
+
+Normally () captures a group for group(n)
+
+Sometimes you only want to group without capturing
+
+text = "apple banana cherry"
+pattern = r"(?:apple|banana)"
+matches = re.findall(pattern, text)
+print(matches)  # ['apple', 'banana']
+
+
+✅ Explanation:
+
+Matches either apple or banana
+
+Doesn’t create a capture group number
+
+Useful for alternation without adding extra group indices
+
+3️⃣ Flags
+
+Flags modify pattern behavior. Use them in re.search, re.findall, or re.compile.
+
+Flag	Description
+re.IGNORECASE / re.I	Ignore case (a matches A)
+re.MULTILINE / re.M	^ and $ match start/end of lines, not just string
+re.DOTALL / re.S	. matches newline characters as well
+
+Example:
+
+text = "Hello\nWorld"
+pattern = r".+"
+
+# Normal
+print(re.findall(pattern, text))  
+# ['Hello', 'World']? Actually only ['Hello'] normally
+
+# DOTALL
+print(re.findall(pattern, text, re.DOTALL))
+# ['Hello\nWorld']
+
+4️⃣ Compiled regex
+
+If you use the same regex multiple times, compiling improves performance
+
+pattern = re.compile(r"\d+")
+print(pattern.findall("123 456 789"))  # ['123', '456', '789']
+print(pattern.findall("42 99"))        # ['42', '99']
+
+
+Can combine flags with compile:
+
+pattern = re.compile(r"hello", re.I)
+pattern.search("HELLO world")  # matches
+
+🔹 Summary of Advanced Features
+Feature	Use case
+(?=...)	Only match if something follows
+(?<=...)	Only match if something precedes
+(?:...)	Group without capturing
+re.IGNORECASE	Ignore letter case
+re.MULTILINE	^/$ apply to lines
+re.DOTALL	. matches newlines
+re.compile()	Precompile regex for speed and reuse
+1️⃣ What is a group?
+
+A group is a part of your pattern enclosed in parentheses ()
+
+It lets you:
+
+Capture part of the match for later use
+
+Apply quantifiers or alternation to a subpattern
+
+pattern = r"(abc)"
+
+
+Here (abc) is a group → it captures “abc” if matched.
+
+2️⃣ Why groups are useful
+2.1 Capture part of the match
+import re
+
+text = "My phone is 123-456-7890"
+pattern = r"(\d{3})-(\d{3})-(\d{4})"
+
+m = re.search(pattern, text)
+print(m.group())   # full match: 123-456-7890
+print(m.group(1))  # first group: 123
+print(m.group(2))  # second group: 456
+print(m.group(3))  # third group: 7890
+
+
+✅ Explanation:
+
+() creates groups numbered from 1
+
+group() → full match
+
+group(n) → content of nth group
+
+2.2 Apply quantifiers to a subpattern
+pattern = r"(ab)+"
+re.findall(pattern, "abababc")  # ['ab', 'ab']
+
+
+(ab)+ → matches one or more repetitions of "ab"
+
+Without (), only "ab" would be matched repeatedly in some cases
+
+2.3 Use alternation in a group
+pattern = r"(cat|dog|mouse)"
+re.findall(pattern, "cat dog mouse elephant")  
+# ['cat', 'dog', 'mouse']
+
+
+(cat|dog|mouse) → match any one of these, captured as a group
+
+3️⃣ Non-capturing groups (?:...)
+
+Sometimes you need grouping without capturing
+
+Example:
+
+pattern = r"(?:cat|dog|mouse)\s+\w+"
+re.findall(pattern, "cat is nice, dog runs")  
+# ['cat is', 'dog runs']
+
+
+(?:...) → group for patterning, but doesn’t create group numbers
+
+4️⃣ Named groups (optional, very clean)
+
+Instead of numeric group(1), you can name a group:
+
+pattern = r"(?P<area>\d{3})-(?P<local>\d{3})-(?P<number>\d{4})"
+m = re.search(pattern, "123-456-7890")
+print(m.group("area"))    # 123
+print(m.group("local"))   # 456
+print(m.group("number"))  # 7890
+
+5️⃣ Quick recap
+Concept	Syntax	Purpose
+Capturing group	( ... )	Capture substring
+Non-capturing group	(?: ... )	Group pattern, don’t capture
+Named group	(?P<name> ... )	Capture substring with a name
+Numbered group	group(1), group(2)	Access captured parts
+
+💡 Mental model:
+
+Think of a regex as a sentence:
+
+"My phone is 123-456-7890"
+
+
+(123) → “group 1” → area code
+
+(456) → “group 2” → exchange code
+
+(7890) → “group 3” → subscriber number
+
+Groups let you slice the match into meaningful parts automatically.
+
+---
+logging
+logging is Python’s built-in professional logging system used to:
+
+record program activity
+
+debug issues
+
+track errors & warnings
+
+audit behavior in production
+
+👉 It is NOT for user output (that’s print).
+
+where is thsi logging goes
+1️⃣ By default
+
+If you just do:
+
+import logging
+
+logging.warning("This is a warning!")
+
+
+Where does it go?
+By default, the log message is sent to standard error (stderr) — basically your console/terminal.
+
+Format: It looks something like:
+
+WARNING:root:This is a warning!
+
+
+Here:
+
+WARNING → the log level
+
+root → the default logger name
+
+This is a warning! → your message
+
+So unless you configure logging, it doesn’t go to a file or database automatically — just the console.
+
+2️⃣ Configurable destinations
+
+Python logging is flexible. You can direct logs to different “handlers”:
+
+Handler Type	Example Usage	Destination
+StreamHandler	Default	Console (stdout/stderr)
+FileHandler	logging.FileHandler('app.log')	A file on disk
+RotatingFileHandler	Rotates log files when they reach a size limit	Disk files with rotation
+SMTPHandler	Send logs via email	Email inbox
+HTTPHandler	Send logs to a web server	HTTP endpoint
+SysLogHandler	Send logs to system log (Linux/macOS)	/var/log/syslog or system logs
+MemoryHandler	Store logs in memory before flushing to another target	Memory buffer
+3️⃣ Example: Logging to a file
+import logging
+
+logging.basicConfig(
+    filename='app.log',      # file to store logs
+    level=logging.INFO,      # minimum log level
+    format='%(asctime)s %(levelname)s:%(message)s'
+)
+
+logging.info("Application started")
+logging.warning("Something might be wrong")
+
+
+This will write logs to app.log instead of the console.
+
+Each line will have a timestamp, level, and your message.
+
+4️⃣ Multiple destinations
+
+You can even send logs to both console and file:
+
+import logging
+
+# Create logger
+logger = logging.getLogger("my_app")
+logger.setLevel(logging.DEBUG)
+
+# Console handler
+ch = logging.StreamHandler()
+ch.setLevel(logging.WARNING)
+
+# File handler
+fh = logging.FileHandler("app.log")
+fh.setLevel(logging.INFO)
+
+# Formatter
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+ch.setFormatter(formatter)
+fh.setFormatter(formatter)
+
+# Add handlers
+logger.addHandler(ch)
+logger.addHandler(fh)
+
+logger.info("Info message")      # Goes to file
+logger.warning("Warning message") # Goes to both console and file
+
+
+✅ Summary
+
+By default, logging goes to stderr (console).
+
+You can configure it to go to files, emails, HTTP endpoints, system logs, or multiple destinations using handlers.
+
+Logging is very flexible, and in production, you usually log to files or centralized logging systems (like ELK, Splunk, or Graylog).
+
+
+---
+
+
+concurrent.futures
+What is concurrent.futures?
+
+concurrent.futures provides a high-level API to run functions:
+
+concurrently
+
+using threads or processes
+
+with future objects to track results
+
+Introduced to replace messy threading / multiprocessing code.
+
+Main components
+concurrent.futures
+ ├── ThreadPoolExecutor   (threads)
+ ├── ProcessPoolExecutor  (processes)
+ └── Future               (result placeholder)
+
+When to use which?
+Task type	Use
+I/O bound (network, disk, sleep)	ThreadPoolExecutor
+CPU bound (math, compression)	ProcessPoolExecutor
+Async single-thread	asyncio
+
+⚠️ Due to GIL, threads do NOT speed up CPU work.
+
+ThreadPoolExecutor (I/O bound)
+Basic example
+from concurrent.futures import ThreadPoolExecutor
+
+def work(x):
+    return x * x
+
+with ThreadPoolExecutor(max_workers=4) as executor:
+    results = executor.map(work, [1, 2, 3, 4])
+
+print(list(results))
+
+
+✔ Runs tasks concurrently
+✔ Order preserved
+
+submit() + Future
+from concurrent.futures import ThreadPoolExecutor
+
+def work(x):
+    return x * 2
+
+with ThreadPoolExecutor() as ex:
+    future = ex.submit(work, 10)
+    print(future.result())
+
+Future object (VERY IMPORTANT)
+
+A Future represents a result that will exist later.
+
+future.done()       # finished?
+future.running()    # running?
+future.result()     # blocks until done
+future.exception()  # exception if raised
+
+Handling many tasks + completion order
+from concurrent.futures import as_completed, ThreadPoolExecutor
+
+def task(n):
+    return n
+
+with ThreadPoolExecutor() as ex:
+    futures = [ex.submit(task, i) for i in range(5)]
+
+    for future in as_completed(futures):
+        print(future.result())
+
+
+✔ Order of completion, not submission
+
+ProcessPoolExecutor (CPU bound)
+from concurrent.futures import ProcessPoolExecutor
+
+def cpu_task(n):
+    return sum(i*i for i in range(n))
+
+if __name__ == "__main__":
+    with ProcessPoolExecutor() as ex:
+        print(list(ex.map(cpu_task, [10_000, 20_000])))
+
+
+⚠️ Windows needs if __name__ == "__main__"
+
+Thread vs Process (key differences)
+Feature	ThreadPool	ProcessPool
+Memory	Shared	Separate
+Speed	I/O fast	CPU fast
+Overhead	Low	High
+Pickle needed	No	Yes
+GIL affected	Yes	No
+Error handling (important)
+def bad():
+    raise ValueError("oops")
+
+with ThreadPoolExecutor() as ex:
+    future = ex.submit(bad)
+    try:
+        future.result()
+    except Exception as e:
+        print("Error:", e)
+
+Timeouts
+future.result(timeout=2)
+
+
+Raises TimeoutError
+
+Cancelling tasks
+future.cancel()
+
+
+Only works if task has not started
+
+Limiting workers
+ThreadPoolExecutor(max_workers=8)
+
+
+Default:
+
+Threads → min(32, os.cpu_count() + 4)
+
+Processes → os.cpu_count()
+
+Real-world examples
+Download multiple URLs
+import requests
+from concurrent.futures import ThreadPoolExecutor
+
+urls = ["https://example.com"] * 5
+
+def fetch(url):
+    return requests.get(url).status_code
+
+with ThreadPoolExecutor() as ex:
+    print(list(ex.map(fetch, urls)))
+
+Parallel file processing
+from concurrent.futures import ProcessPoolExecutor
+
+def count_lines(path):
+    return sum(1 for _ in open(path))
+
+with ProcessPoolExecutor() as ex:
+    print(list(ex.map(count_lines, files)))
+
+
+-----
